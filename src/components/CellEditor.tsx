@@ -115,17 +115,23 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
         <input
           id="cell-title"
           className={`${f.input} ${f.plain}`}
-          list="cell-title-options"
+          autoComplete="off"
           placeholder={cat === 'ind' ? 'Ім’я учня' : cat === 'math' || cat === 'geo' ? 'Напр. 6-В Математика' : ''}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && apply()}
         />
-        <datalist id="cell-title-options">
-          {suggestions.map((t) => (
-            <option key={t} value={t} />
-          ))}
-        </datalist>
+        {suggestions.filter((t) => t !== title.trim()).length > 0 && (
+          <div className={s.chips} aria-label="Швидкий вибір">
+            {suggestions
+              .filter((t) => t !== title.trim())
+              .map((t) => (
+                <button key={t} type="button" className={`${s.chip} cat-${cat}`} onClick={() => setTitle(t)}>
+                  {t}
+                </button>
+              ))}
+          </div>
+        )}
 
         <label className={f.label} htmlFor="cell-time">
           Точний початок <span className={f.optional}>— якщо не {slot ? pretty(slot.start) : ''}</span>
