@@ -8,10 +8,25 @@ const LINES = [
   'Двічі не вгадав. Отже, й не знаєш.',
 ];
 
-function left(ms: number) {
-  const m = Math.max(0, Math.ceil(ms / 60000));
-  const h = Math.floor(m / 60);
-  return h > 0 ? `${h} год ${m % 60} хв` : `${m} хв`;
+/** 86 399 000 мс → "23:59:59" */
+function clock(ms: number) {
+  const t = Math.max(0, Math.ceil(ms / 1000));
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(Math.floor(t / 3600))}:${p(Math.floor((t % 3600) / 60))}:${p(t % 60)}`;
+}
+
+/** Коли саме розблокується: "завтра о 11:42" / "сьогодні о 23:10" */
+function whenLabel(until: number, now: number) {
+  const u = new Date(until);
+  const n = new Date(now);
+  const time = u.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+  const days = Math.round(
+    (new Date(u.getFullYear(), u.getMonth(), u.getDate()).getTime() -
+      new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime()) /
+      864e5,
+  );
+  const day = days === 0 ? 'сьогодні' : days === 1 ? 'завтра' : u.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+  return `${day} о ${time}`;
 }
 
 interface Props {
@@ -25,7 +40,7 @@ export function BanScreen({ until, onExpire }: Props) {
   const line = useMemo(() => LINES[Math.floor(Math.random() * LINES.length)], []);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
-    const t = window.setInterval(() => setNow(Date.now()), 30000);
+    const t = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(t);
   }, []);
   useEffect(() => {
@@ -40,9 +55,11 @@ export function BanScreen({ until, onExpire }: Props) {
           Доступ закрито на добу
         </h2>
         <p className={s.line}>{line}</p>
+        <div className={s.timer} role="timer" aria-live="off">
+          {clock(until - now)}
+        </div>
         <p className={s.sub}>
-          Двічі введено неправильний пароль. Сайт із цього браузера знову відкриється через{' '}
-          <b>{left(until - now)}</b>.
+          Двічі введено неправильний пароль. Сайт із цього браузера відкриється {whenLabel(until, now)}.
         </p>
       </div>
     </div>
