@@ -11,7 +11,9 @@
 .withBar { padding-bottom: 110px; }
 .board { padding: 18px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.hint { font-size: 13px; color: var(--accent); font-weight: 600; }
+.hint { font-size: 13px; color: var(--accent); font-weight: 600; width: 100%; }
+.weekNav { display: flex; align-items: center; gap: 4px; }
+.weekLabel { min-width: 132px; text-align: center; font-size: 14px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .state { min-height: 60vh; display: grid; place-items: center; padding: 24px; color: var(--ink-2); text-align: center; font-weight: 500; }
 @media (max-width: 560px) {
   .page { gap: 14px; padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { LayoutGrid, List } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LayoutGrid, List } from 'lucide-react';
 import type { Cell } from './types';
 import { useSchedule } from './hooks/useSchedule';
 import { useEditor } from './hooks/useEditor';
 import { useNow } from './hooks/useNow';
 import { useTheme } from './hooks/useTheme';
 import { useMediaQuery } from './hooks/useMediaQuery';
+import { useCalendar } from './hooks/useCalendar';
+import { isCancelled, weekDates } from './lib/calendar';
 import { dayKeyOf } from './lib/constants';
 import { nowMin } from './lib/time';
 import { Header } from './components/Header';
@@ -29,6 +31,7 @@ export default function App() {
   const editor = useEditor(schedule, setSchedule);
   const now = useNow();
   const { theme, toggle } = useTheme();
+  const cal = useCalendar();
   const wide = useMediaQuery('(min-width: 1024px)');
 
   const [view, setView] = useState<View>(wide ? 'week' : 'day');
@@ -37,6 +40,7 @@ export default function App() {
     if (!userPicked) setView(wide ? 'week' : 'day');
   }, [wide, userPicked]);
 
+  const [weekOffset, setWeekOffset] = useState(0);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [target, setTarget] = useState<EditTarget | null>(null);
   const [toast, setToast] = useState<ToastMsg | null>(null);
@@ -48,8 +52,17 @@ export default function App() {
   if (error) return <div className={s.state}>{error}</div>;
   if (!data) return <div className={s.state}>Завантажую розклад…</div>;
 
-  const today = dayKeyOf(now);
+  const shown = new Date(now.getFullYear(), now.getMonth(), now.getDate() + weekOffset * 7);
+  const week = weekDates(shown);
+  const today = weekOffset === 0 ? dayKeyOf(now) : null;
   const m = nowMin(now);
+  const fmt = (d: Date, month: boolean) =>
+    d.toLocaleDateString('uk-UA', month ? { day: 'numeric', month: 'long' } : { day: 'numeric' });
+  const weekLabel =
+    week.mon.getMonth() === week.sun.getMonth()
+      ? `${fmt(week.mon, false)}–${fmt(week.sun, true)}`
+      : `${fmt(week.mon, true)} – ${fmt(week.sun, true)}`;
+  const edit = (day: EditTarget['day'], slotId: string) => setTarget({ day, slotId, date: week[day] });
 
   const onLockClick = () => {
     if (!editor.editing) return setUnlockOpen(true);
@@ -63,8 +76,11 @@ export default function App() {
     else notify('err', res.message);
   };
 
-  const onApply = (cell: Cell | null) => {
-    if (target) editor.setCell(target.day, target.slotId, cell);
+  const onApply = (cell: Cell | null, cancelled: boolean) => {
+    if (target) {
+      editor.setCell(target.day, target.slotId, cell);
+      editor.setCancelled(target.date, target.slotId, cell !== null && cancelled);
+    }
     setTarget(null);
   };
 
@@ -72,7 +88,7 @@ export default function App() {
     <div className={`${s.page} ${editor.editing ? s.withBar : ''}`}>
       <Header meta={data.meta} theme={theme} onToggleTheme={toggle} editing={editor.editing} onLockClick={onLockClick} />
 
-      <NowCard schedule={data} now={now} />
+      <NowCard schedule={data} cal={cal} now={now} />
 
       <section className={`${s.board} card`} aria-label="Розклад">
         <div className={s.toolbar}>
@@ -88,17 +104,33 @@ export default function App() {
               { value: 'day', label: 'День', icon: <List size={15} /> },
             ]}
           />
-          {editor.editing && <span className={s.hint}>Натисни на клітинку, щоб змінити її</span>}
+          <div className={s.weekNav} aria-label="Тиждень">
+            <button className="btn btn-ghost btn-icon" onClick={() => setWeekOffset((w) => w - 1)} aria-label="Попередній тиждень">
+              <ChevronLeft size={18} />
+            </button>
+            <span className={s.weekLabel}>{weekLabel}</span>
+            <button className="btn btn-ghost btn-icon" onClick={() => setWeekOffset((w) => w + 1)} aria-label="Наступний тиждень">
+              <ChevronRight size={18} />
+            </button>
+            {weekOffset !== 0 && (
+              <button className="btn btn-ghost" onClick={() => setWeekOffset(0)}>
+                Цей тиждень
+              </button>
+            )}
+          </div>
+          {editor.editing && (
+            <span className={s.hint}>Натисни на клітинку, щоб змінити її або позначити, що заняття не було</span>
+          )}
         </div>
         {view === 'week' ? (
-          <WeekGrid schedule={data} today={today} nowMin={m} editing={editor.editing} onEdit={(day, slotId) => setTarget({ day, slotId })} />
+          <WeekGrid schedule={data} cal={cal} week={week} today={today} nowMin={m} editing={editor.editing} onEdit={edit} />
         ) : (
-          <DayView schedule={data} today={today} nowMin={m} editing={editor.editing} onEdit={(day, slotId) => setTarget({ day, slotId })} />
+          <DayView schedule={data} cal={cal} week={week} today={today} nowMin={m} editing={editor.editing} onEdit={edit} />
         )}
         <Legend />
       </section>
 
-      <MonthStats schedule={data} now={now} />
+      <MonthStats schedule={data} cal={cal} now={now} money={editor.money} />
       <Footer updatedAt={data.updatedAt} />
 
       <UnlockDialog
@@ -110,7 +142,13 @@ export default function App() {
           return res;
         }}
       />
-      <CellEditor target={target} schedule={data} onApply={onApply} onClose={() => setTarget(null)} />
+      <CellEditor
+        target={target}
+        schedule={data}
+        cancelled={target ? isCancelled(data, target.date, target.slotId) : false}
+        onApply={onApply}
+        onClose={() => setTarget(null)}
+      />
       {editor.editing && (
         <SaveBar
           changes={editor.changes}

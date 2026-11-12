@@ -12,9 +12,7 @@ function headers(token: string): HeadersInit {
   };
 }
 
-function url(a: RepoAccess): string {
-  return `${API}/repos/${a.owner}/${a.repo}/contents/${a.path}`;
-}
+const fileUrl = (a: RepoAccess, path: string) => `${API}/repos/${a.owner}/${a.repo}/contents/${path}`;
 
 function explain(status: number): string {
   if (status === 401) return 'GitHub не прийняв токен: він недійсний або строк дії минув.';
@@ -27,29 +25,49 @@ function explain(status: number): string {
 
 export class GitHubError extends Error {}
 
-/** Найсвіжіша версія розкладу просто з репозиторію + її sha для наступного збереження */
-export async function fetchRemote(a: RepoAccess): Promise<{ schedule: Schedule; sha: string }> {
-  const res = await fetch(`${url(a)}?ref=${encodeURIComponent(a.branch)}`, {
+/** Файл із репозиторію; null, якщо його ще немає */
+export async function getFile(a: RepoAccess, path: string): Promise<{ text: string; sha: string } | null> {
+  const res = await fetch(`${fileUrl(a, path)}?ref=${encodeURIComponent(a.branch)}`, {
     headers: headers(a.token),
     cache: 'no-store',
   });
+  if (res.status === 404) return null;
   if (!res.ok) throw new GitHubError(explain(res.status));
   const body = (await res.json()) as { sha: string; content: string };
-  return { schedule: JSON.parse(b64ToUtf8(body.content)) as Schedule, sha: body.sha };
+  return { text: b64ToUtf8(body.content), sha: body.sha };
 }
 
-export async function saveRemote(a: RepoAccess, schedule: Schedule, sha: string): Promise<string> {
-  const res = await fetch(url(a), {
+/** Створює або оновлює файл; повертає новий sha */
+export async function putFile(
+  a: RepoAccess,
+  path: string,
+  text: string,
+  sha: string | null,
+  message: string,
+): Promise<string> {
+  const res = await fetch(fileUrl(a, path), {
     method: 'PUT',
     headers: { ...headers(a.token), 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message: `Розклад оновлено ${new Date().toLocaleString('uk-UA')}`,
-      content: utf8ToB64(JSON.stringify(schedule, null, 2) + '\n'),
-      sha,
-      branch: a.branch,
-    }),
+    body: JSON.stringify({ message, content: utf8ToB64(text), branch: a.branch, ...(sha ? { sha } : {}) }),
   });
   if (!res.ok) throw new GitHubError(explain(res.status));
   const body = (await res.json()) as { content: { sha: string } };
   return body.content.sha;
+}
+
+/** Найсвіжіша версія розкладу просто з репозиторію + її sha для наступного збереження */
+export async function fetchRemote(a: RepoAccess): Promise<{ schedule: Schedule; sha: string }> {
+  const file = await getFile(a, a.path);
+  if (!file) throw new GitHubError(explain(404));
+  return { schedule: JSON.parse(file.text) as Schedule, sha: file.sha };
+}
+
+export function saveRemote(a: RepoAccess, schedule: Schedule, sha: string): Promise<string> {
+  return putFile(
+    a,
+    a.path,
+    JSON.stringify(schedule, null, 2) + '\n',
+    sha,
+    `Розклад оновлено ${new Date().toLocaleString('uk-UA')}`,
+  );
 }

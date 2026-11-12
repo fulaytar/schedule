@@ -11,29 +11,35 @@ import s from './CellEditor.module.css';
 export interface EditTarget {
   day: DayKey;
   slotId: string;
+  /** конкретна дата цього дня на показаному тижні */
+  date: Date;
 }
 
 interface Props {
   target: EditTarget | null;
   schedule: Schedule;
-  onApply: (cell: Cell | null) => void;
+  /** чи це заняття скасоване саме на target.date */
+  cancelled: boolean;
+  onApply: (cell: Cell | null, cancelled: boolean) => void;
   onClose: () => void;
 }
 
-export function CellEditor({ target, schedule, onApply, onClose }: Props) {
+export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Props) {
   const current = target ? schedule.cells[target.day]?.[target.slotId] : undefined;
   const slot = target ? schedule.slots.find((x) => x.id === target.slotId) : undefined;
 
   const [cat, setCat] = useState<CatKey>('math');
   const [title, setTitle] = useState('');
   const [time, setTime] = useState('');
+  const [off, setOff] = useState(false);
 
   useEffect(() => {
     if (!target) return;
     setCat(current?.cat ?? 'math');
     setTitle(current?.title ?? '');
     setTime(current?.time ?? '');
-  }, [target, current]);
+    setOff(cancelled);
+  }, [target, current, cancelled]);
 
   // Підказки: усі назви, які вже трапляються в цій категорії
   const suggestions = useMemo(() => {
@@ -55,12 +61,13 @@ export function CellEditor({ target, schedule, onApply, onClose }: Props) {
     if (!canSave) return;
     const cell: Cell = { cat, title: finalTitle };
     if (time && slot && time !== slot.start) cell.time = time;
-    onApply(cell);
+    onApply(cell, off);
   };
 
   const dayName = target ? DAYS.find((d) => d.key === target.day)!.full : '';
+  const dateLabel = target ? target.date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' }) : '';
   const subtitle = slot
-    ? `${dayName} · ${slot.num !== null ? `${slot.num} урок · ` : ''}${pretty(slot.start)}–${pretty(slot.end)}`
+    ? `${dayName}, ${dateLabel} · ${slot.num !== null ? `${slot.num} урок · ` : ''}${pretty(slot.start)}–${pretty(slot.end)}`
     : '';
 
   return (
@@ -72,7 +79,7 @@ export function CellEditor({ target, schedule, onApply, onClose }: Props) {
       footer={
         <>
           {current && (
-            <button className="btn btn-danger" onClick={() => onApply(null)} style={{ marginRight: 'auto' }}>
+            <button className="btn btn-danger" onClick={() => onApply(null, false)} style={{ marginRight: 'auto' }}>
               <Trash2 size={16} /> Прибрати
             </button>
           )}
@@ -137,6 +144,21 @@ export function CellEditor({ target, schedule, onApply, onClose }: Props) {
             </button>
           )}
         </div>
+
+        {current && (
+          <>
+            <span className={f.label}>
+              Лише {dateLabel} <span className={f.optional}>— решта тижнів без змін</span>
+            </span>
+            <label className={`${s.cancel} ${off ? s.cancelOn : ''}`}>
+              <input type="checkbox" checked={off} onChange={(e) => setOff(e.target.checked)} />
+              <span>
+                <b>Заняття не відбулося</b>
+                <small>Прибрати зі статистики{cat === 'ind' ? ' й доходу' : ''}</small>
+              </span>
+            </label>
+          </>
+        )}
       </div>
     </Modal>
   );

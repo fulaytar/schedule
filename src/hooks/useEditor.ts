@@ -1,15 +1,26 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Cell, DayKey, Schedule } from '../types';
-import { loadSecret, unlockSecret, type RepoAccess } from '../lib/crypto';
-import { fetchRemote, saveRemote, GitHubError } from '../lib/github';
+import { loadSecret, seal, unlockSecret, unseal, type RepoAccess, type SealedBlob } from '../lib/crypto';
+import { fetchRemote, getFile, putFile, saveRemote, GitHubError } from '../lib/github';
 import { DAYS } from '../lib/constants';
+import { cancelKey } from '../lib/calendar';
 
 const IDLE_LOCK_MS = 30 * 60 * 1000;
+
+/** Приватні налаштування: зашифровані паролем, поза сайтом (у корені репо) */
+const PRIVATE_PATH = 'private/settings.json';
+export interface PrivateSettings {
+  /** Ціна одного індивідуального заняття, грн */
+  price: number;
+}
+const DEFAULT_PRIVATE: PrivateSettings = { price: 300 };
 
 const clone = (s: Schedule): Schedule => JSON.parse(JSON.stringify(s)) as Schedule;
 
 function countChanges(a: Schedule, b: Schedule): number {
-  let n = 0;
+  const ca = new Set(a.cancelled ?? []);
+  const cb = new Set(b.cancelled ?? []);
+  let n = [...ca].filter((k) => !cb.has(k)).length + [...cb].filter((k) => !ca.has(k)).length;
   for (const { key } of DAYS) {
     const x = a.cells[key] ?? {};
     const y = b.cells[key] ?? {};
@@ -29,6 +40,9 @@ export type UnlockResult = { ok: true } | { ok: false; message: string };
  */
 export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) => void) {
   const [access, setAccess] = useState<RepoAccess | null>(null);
+  const [key, setKey] = useState<CryptoKey | null>(null);
+  const [priv, setPriv] = useState<PrivateSettings>(DEFAULT_PRIVATE);
+  const [privSha, setPrivSha] = useState<string | null>(null);
   const [sha, setSha] = useState<string | null>(null);
   const [base, setBase] = useState<Schedule | null>(null);
   const [draft, setDraft] = useState<Schedule | null>(null);
@@ -43,13 +57,30 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
       const blob = await loadSecret();
       if (!blob) return { ok: false, message: 'Редагування ще не налаштоване: на сайті немає файла secret.json.' };
       let acc: RepoAccess;
+      let k: CryptoKey;
       try {
-        acc = await unlockSecret(blob, password);
+        const u = await unlockSecret(blob, password);
+        acc = u.access;
+        k = u.key;
       } catch {
         return { ok: false, message: 'Невірний пароль.' };
       }
       try {
         const remote = await fetchRemote(acc);
+        let settings = DEFAULT_PRIVATE;
+        let settingsSha: string | null = null;
+        const file = await getFile(acc, PRIVATE_PATH).catch(() => null);
+        if (file) {
+          settingsSha = file.sha;
+          try {
+            settings = { ...DEFAULT_PRIVATE, ...(await unseal<PrivateSettings>(k, JSON.parse(file.text) as SealedBlob)) };
+          } catch {
+            /* файл зашифровано іншим паролем — беремо типові значення */
+          }
+        }
+        setKey(k);
+        setPriv(settings);
+        setPrivSha(settingsSha);
         setAccess(acc);
         setSha(remote.sha);
         setBase(remote.schedule);
@@ -66,6 +97,9 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
 
   const lock = useCallback(() => {
     setAccess(null);
+    setKey(null);
+    setPriv(DEFAULT_PRIVATE);
+    setPrivSha(null);
     setSha(null);
     setBase(null);
     setDraft(null);
@@ -80,6 +114,22 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
       if (cell) dayCells[slotId] = cell;
       else delete dayCells[slotId];
       next.cells[day] = dayCells;
+      return next;
+    });
+  }, []);
+
+  /** Позначити / зняти скасування заняття на конкретну дату */
+  const setCancelled = useCallback((date: Date, slotId: string, on: boolean) => {
+    lastActive.current = Date.now();
+    const k = cancelKey(date, slotId);
+    setDraft((d) => {
+      if (!d) return d;
+      const set = new Set(d.cancelled ?? []);
+      if (on) set.add(k);
+      else set.delete(k);
+      const next = clone(d);
+      next.cancelled = [...set].sort();
+      if (next.cancelled.length === 0) delete next.cancelled;
       return next;
     });
   }, []);
@@ -103,6 +153,23 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
       setSaving(false);
     }
   }, [access, draft, sha, setSchedule]);
+
+  const savePrice = useCallback(
+    async (price: number): Promise<UnlockResult> => {
+      if (!access || !key) return { ok: false, message: 'Спершу увійди в режим змін.' };
+      try {
+        const next: PrivateSettings = { ...priv, price };
+        const sealed = await seal(key, next);
+        const sha = await putFile(access, PRIVATE_PATH, JSON.stringify(sealed, null, 2) + '\n', privSha, 'Оновлено приватні налаштування');
+        setPrivSha(sha);
+        setPriv(next);
+        return { ok: true };
+      } catch (e) {
+        return { ok: false, message: e instanceof GitHubError ? e.message : 'Немає зв’язку з GitHub.' };
+      }
+    },
+    [access, key, priv, privSha],
+  );
 
   // Автоматичне блокування після 30 хв без дій (якщо немає незбережених змін)
   useEffect(() => {
@@ -139,7 +206,10 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
     unlock,
     lock,
     setCell,
+    setCancelled,
     discard,
     save,
+    /** Видно тільки в режимі змін */
+    money: editing ? { price: priv.price, savePrice } : null,
   };
 }

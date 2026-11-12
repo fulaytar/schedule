@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { Block, Schedule } from '../types';
 import { DAYS, dayKeyOf } from '../lib/constants';
-import { dayBlocks } from '../lib/blocks';
+import { blocksOn, dayStatus, shortDate, type SchoolCalendar } from '../lib/calendar';
 import { nowMin, pretty, toMin } from '../lib/time';
 import { CatPill } from './CatPill';
 import s from './NowCard.module.css';
@@ -19,12 +19,12 @@ interface Next {
   inMins: number | null;
 }
 
-export function NowCard({ schedule, now }: { schedule: Schedule; now: Date }) {
+export function NowCard({ schedule, cal, now }: { schedule: Schedule; cal: SchoolCalendar | null; now: Date }) {
   const m = nowMin(now);
   const today = dayKeyOf(now);
 
   const { current, next } = useMemo(() => {
-    const blocks = dayBlocks(schedule, today);
+    const blocks = blocksOn(schedule, cal, now);
     const current = blocks.find((b) => toMin(b.start) <= m && m < toMin(b.end)) ?? null;
     let next: Next | null = null;
     const later = blocks.find((b) => toMin(b.start) > m && b.cell.cat !== 'free');
@@ -33,7 +33,7 @@ export function NowCard({ schedule, now }: { schedule: Schedule; now: Date }) {
       for (let i = 1; i <= 7 && !next; i++) {
         const d = new Date(now);
         d.setDate(d.getDate() + i);
-        const first = dayBlocks(schedule, dayKeyOf(d)).find((b) => b.cell.cat !== 'free');
+        const first = blocksOn(schedule, cal, d).find((b) => b.cell.cat !== 'free');
         if (first) {
           const name = DAYS.find((x) => x.key === dayKeyOf(d))!.full.toLowerCase();
           next = { block: first, dayLabel: i === 1 ? 'завтра' : name, inMins: null };
@@ -41,7 +41,9 @@ export function NowCard({ schedule, now }: { schedule: Schedule; now: Date }) {
       }
     }
     return { current, next };
-  }, [schedule, today, m, now]);
+  }, [schedule, cal, today, m, now]);
+
+  const status = dayStatus(cal, now);
 
   const dateLabel = now.toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long' });
   const progress = current ? (m - toMin(current.start)) / (toMin(current.end) - toMin(current.start)) : 0;
@@ -51,6 +53,12 @@ export function NowCard({ schedule, now }: { schedule: Schedule; now: Date }) {
       <div className={s.clock}>
         <div className={s.time}>{now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}</div>
         <div className={s.date}>{dateLabel}</div>
+        {!status.school && (
+          <div className={s.break}>
+            {status.reason}
+            {status.until ? ` · до ${shortDate(status.until)}` : ''}
+          </div>
+        )}
       </div>
 
       <div className={s.slot}>

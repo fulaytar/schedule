@@ -16,6 +16,16 @@
 }
 .date { margin-top: 6px; color: var(--ink-2); font-size: 14px; font-weight: 500; }
 .date::first-letter { text-transform: uppercase; }
+.break {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: var(--gym-bg);
+  color: var(--gym-fg);
+  font-size: 12.5px;
+  font-weight: 700;
+}
 .slot { padding: 16px 20px; border-left: 1px solid var(--border); min-width: 0; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
 .label {
   display: flex;
@@ -45,7 +55,8 @@
 
 @media (max-width: 760px) {
   .card { grid-template-columns: 1fr 1fr; }
-  .clock { grid-column: 1 / -1; flex-direction: row; align-items: baseline; gap: 12px; padding: 14px 18px; }
+  .clock { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 14px 18px; }
+  .break { margin-top: 0; align-self: center; }
   .time { font-size: 30px; }
   .date { margin: 0; }
   .slot { padding: 14px 16px; }

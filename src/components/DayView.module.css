@@ -47,6 +47,16 @@
   background: var(--accent-soft);
   color: var(--accent);
 }
+.dateLabel { font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--ink-3); }
+.holiday {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--gym-bg);
+  color: var(--gym-fg);
+  font-weight: 600;
+  font-size: 14px;
+}
 .meta { color: var(--ink-2); font-size: 14px; font-weight: 500; }
 
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }

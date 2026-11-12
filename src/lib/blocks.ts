@@ -1,7 +1,7 @@
 import type { Block, Cell, DayKey, Schedule, Slot } from '../types';
 
 function same(a: Cell, b: Cell): boolean {
-  return a.cat === b.cat && a.title === b.title && !a.time && !b.time;
+  return a.cat === b.cat && a.title === b.title && !a.time && !b.time && !!a.cancelled === !!b.cancelled;
 }
 
 /**

@@ -14,6 +14,8 @@ export interface Cell {
   title: string;
   /** Точний час, якщо він не збігається з початком слота (напр. "20:30") */
   time?: string;
+  /** Лише для показу: заняття цього дня скасоване (у файлі не зберігається) */
+  cancelled?: boolean;
 }
 
 export interface Meta {
@@ -29,6 +31,8 @@ export interface Schedule {
   meta: Meta;
   slots: Slot[];
   cells: Record<DayKey, DayCells>;
+  /** Скасовані заняття на конкретні дати: "2026-11-10:a5" */
+  cancelled?: string[];
   updatedAt?: string;
 }
 

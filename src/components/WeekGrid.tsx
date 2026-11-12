@@ -5,11 +5,16 @@ import { DAYS } from '../lib/constants';
 import { dayBlocks } from '../lib/blocks';
 import { pretty, toMin } from '../lib/time';
 import { CatPill } from './CatPill';
+import { dayStatus, isCancelled, markCancelled, type SchoolCalendar } from '../lib/calendar';
 import s from './WeekGrid.module.css';
 
 interface Props {
   schedule: Schedule;
-  today: DayKey;
+  cal: SchoolCalendar | null;
+  /** Дати поточного тижня — щоб показати числа й приглушити уроки в канікули */
+  week: Record<DayKey, Date>;
+  /** null — показано не поточний тиждень */
+  today: DayKey | null;
   nowMin: number;
   editing: boolean;
   onEdit: (day: DayKey, slotId: string) => void;
@@ -17,7 +22,9 @@ interface Props {
 
 type Row = { kind: 'slot'; slot: Slot } | { kind: 'sep' };
 
-export function WeekGrid({ schedule, today, nowMin, editing, onEdit }: Props) {
+export function WeekGrid({ schedule, cal, week, today, nowMin, editing, onEdit }: Props) {
+  const offDay = (d: DayKey) => !dayStatus(cal, week[d]).school;
+  const isSchoolCat = (cat: string) => !!cal && (cal.schoolCategories as string[]).includes(cat);
   // У звичайному режимі ховаємо рядки, де за весь тиждень нічого немає
   const visible = schedule.slots.filter(
     (slot) => editing || DAYS.some(({ key }) => schedule.cells[key]?.[slot.id]),
@@ -35,7 +42,7 @@ export function WeekGrid({ schedule, today, nowMin, editing, onEdit }: Props) {
   const lastRow = rows.length + 1;
 
   const template = ['auto', ...rows.map((r) => (r.kind === 'sep' ? '26px' : 'minmax(48px, auto)'))].join(' ');
-  const isNowSlot = (slot: Slot) => toMin(slot.start) <= nowMin && nowMin < toMin(slot.end);
+  const isNowSlot = (slot: Slot) => today !== null && toMin(slot.start) <= nowMin && nowMin < toMin(slot.end);
 
   return (
     <div className={s.scroll}>
@@ -43,9 +50,14 @@ export function WeekGrid({ schedule, today, nowMin, editing, onEdit }: Props) {
         <div className={s.corner}>Час</div>
         {DAYS.map((d, i) => (
           <div key={d.key} className={`${s.dayHead} ${d.key === today ? s.todayHead : ''}`} style={{ gridColumn: i + 2, gridRow: 1 }}>
-            <span className={s.dayFull}>{d.full}</span>
-            <span className={s.dayShort}>{d.short}</span>
-            {d.key === today && <span className={s.todayTag}>сьогодні</span>}
+            <span className={s.dayName}>
+              <span>{d.full}</span>
+              <span className={s.date}>
+                {week[d.key].getDate()}.{String(week[d.key].getMonth() + 1).padStart(2, '0')}
+                {offDay(d.key) && ' · канікули'}
+              </span>
+              {d.key === today && <span className={s.todayTag}>сьогодні</span>}
+            </span>
           </div>
         ))}
 
@@ -81,11 +93,12 @@ export function WeekGrid({ schedule, today, nowMin, editing, onEdit }: Props) {
           const col = di + 2;
           if (editing) {
             return visible.map((slot) => {
-              const cell = schedule.cells[d.key]?.[slot.id];
+              const raw = schedule.cells[d.key]?.[slot.id];
+              const cell = raw && isCancelled(schedule, week[d.key], slot.id) ? { ...raw, cancelled: true } : raw;
               return (
                 <button
                   key={`${d.key}-${slot.id}`}
-                  className={`${s.cell} ${s.editable} ${cell ? `cat-${cell.cat} ${s.filled}` : s.empty}`}
+                  className={`${s.cell} ${s.editable} ${cell ? `cat-${cell.cat} ${s.filled}` : s.empty} ${cell?.cancelled ? s.cancelledCell : ''}`}
                   style={{ gridColumn: col, gridRow: rowOf.get(slot.id) }}
                   onClick={() => onEdit(d.key, slot.id)}
                   aria-label={`${d.full}, ${pretty(slot.start)}: ${cell ? cell.title : 'додати'}`}
@@ -96,16 +109,24 @@ export function WeekGrid({ schedule, today, nowMin, editing, onEdit }: Props) {
             });
           }
 
-          const blocks = dayBlocks(schedule, d.key);
+          const blocks = dayBlocks(markCancelled(schedule, week[d.key]), d.key);
           const taken = new Set(blocks.flatMap((b) => b.slotIds));
           const items = blocks.map((b) => {
             const from = rowOf.get(b.slotIds[0])!;
             const to = rowOf.get(b.slotIds[b.slotIds.length - 1])!;
-            const now = d.key === today && toMin(b.start) <= nowMin && nowMin < toMin(b.end);
+            const now =
+              d.key === today &&
+              toMin(b.start) <= nowMin &&
+              nowMin < toMin(b.end) &&
+              !b.cell.cancelled &&
+              !(offDay(d.key) && isSchoolCat(b.cell.cat));
             return (
               <div
                 key={`${d.key}-${b.slotIds[0]}`}
-                className={`${s.cell} ${s.filled} cat-${b.cell.cat} ${now ? s.now : ''}`}
+                className={`${s.cell} ${s.filled} cat-${b.cell.cat} ${now ? s.now : ''} ${b.cell.cancelled ? s.cancelledCell : ''} ${
+                  offDay(d.key) && isSchoolCat(b.cell.cat) ? s.off : ''
+                }`}
+                title={offDay(d.key) && isSchoolCat(b.cell.cat) ? 'Канікули — уроку немає' : undefined}
                 style={{ gridColumn: col, gridRow: `${from} / ${to + 1}` }}
               >
                 <CatPill cell={b.cell} size="sm" />

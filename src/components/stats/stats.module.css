@@ -54,3 +54,56 @@
   .barRow .track { grid-column: 1 / -1; grid-row: 2; }
   .monthName { min-width: 120px; }
 }
+
+/* перемикач періоду */
+.controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* дохід — лише в режимі змін */
+.money {
+  padding: 18px;
+  border-radius: 14px;
+  border: 1.5px solid color-mix(in srgb, var(--ind-fg) 35%, transparent);
+  background: color-mix(in srgb, var(--ind-bg) 55%, var(--surface));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.moneyHead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.moneyHead .chartTitle { margin: 0; }
+.private { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--ind-fg); }
+.moneyMain { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+.moneyTotal { font-family: var(--font-display); font-size: 34px; font-weight: 800; letter-spacing: -0.6px; color: var(--ind-fg); font-variant-numeric: tabular-nums; }
+.moneySub { color: var(--ink-2); font-size: 14px; font-weight: 500; }
+.moneyDone { margin-top: 4px; color: var(--ink-3); font-size: 13px; }
+.priceForm { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.priceRow { display: flex; gap: 8px; }
+.priceRow input {
+  width: 110px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 600;
+}
+.priceRow input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.okMsg { color: var(--accent); }
+.errMsg { color: var(--danger); }
+.people { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.people li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.person { font-weight: 700; color: var(--cat-fg); }
+.personCount { grid-column: 1; font-size: 12.5px; color: var(--ink-3); }
+.personSum { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) {
+  .controls { justify-content: flex-start; width: 100%; }
+  .moneyTotal { font-size: 28px; }
+}
