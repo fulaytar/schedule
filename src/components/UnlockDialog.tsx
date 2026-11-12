@@ -49,7 +49,7 @@ export function UnlockDialog({ open, onClose, onUnlock, onBanned }: Props) {
         return;
       }
       setPw('');
-      setError(`Невірний пароль. Ще одна помилка — і доступ закриється на добу.`);
+      setError('Невірний пароль.');
       return;
     }
     resetWrong(); // пароль правильний, підвів лише зв'язок із GitHub

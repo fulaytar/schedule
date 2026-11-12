@@ -59,7 +59,7 @@ export function BanScreen({ until, onExpire }: Props) {
           {clock(until - now)}
         </div>
         <p className={s.sub}>
-          Двічі введено неправильний пароль. Сайт із цього браузера відкриється {whenLabel(until, now)}.
+          Сайт відкриється {whenLabel(until, now)}.
         </p>
       </div>
     </div>
