@@ -9,5 +9,6 @@
     { "name": "Зимові канікули", "start": "2026-12-28", "end": "2027-01-10" },
     { "name": "Весняні канікули", "start": "2027-03-22", "end": "2027-03-28" }
   ],
-  "schoolCategories": ["math", "geo", "free"]
+  "schoolCategories": ["math", "geo", "free"],
+  "offDayItFrom": "10:00"
 }

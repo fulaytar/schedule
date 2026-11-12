@@ -5,7 +5,7 @@ import { DAYS } from '../lib/constants';
 import { dayBlocks } from '../lib/blocks';
 import { pretty, toMin } from '../lib/time';
 import { CatPill } from './CatPill';
-import { dayStatus, isCancelled, markCancelled, type SchoolCalendar } from '../lib/calendar';
+import { dayStatus, isCancelled, markCancelled, withoutSchool, type SchoolCalendar } from '../lib/calendar';
 import s from './WeekGrid.module.css';
 
 interface Props {
@@ -109,7 +109,9 @@ export function WeekGrid({ schedule, cal, week, today, nowMin, editing, onEdit }
             });
           }
 
-          const blocks = dayBlocks(markCancelled(schedule, week[d.key]), d.key);
+          // у канікули — розклад дня без уроків (IT з 10:00)
+          const daySched = offDay(d.key) ? withoutSchool(schedule, cal, d.key) : schedule;
+          const blocks = dayBlocks(markCancelled(daySched, week[d.key]), d.key);
           const taken = new Set(blocks.flatMap((b) => b.slotIds));
           const items = blocks.map((b) => {
             const from = rowOf.get(b.slotIds[0])!;
