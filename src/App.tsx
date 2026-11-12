@@ -46,7 +46,6 @@ export default function App() {
   const [unlockOpen, setUnlockOpen] = useState(false);
   // блок після двох неправильних паролів: показуємо одразу при вході
   const [ban, setBan] = useState<number | null>(() => bannedUntil());
-  const [banShown, setBanShown] = useState(() => bannedUntil() !== null);
   const [target, setTarget] = useState<EditTarget | null>(null);
   const [toast, setToast] = useState<ToastMsg | null>(null);
   const notify = (kind: ToastMsg['kind'], text: string) => setToast({ id: Date.now(), kind, text });
@@ -54,6 +53,8 @@ export default function App() {
 
   const data = editor.view;
 
+  // заблокований браузер бачить лише попередження — без розкладу
+  if (ban !== null) return <BanScreen until={ban} onExpire={() => setBan(bannedUntil())} />;
   if (error) return <div className={s.state}>{error}</div>;
   if (!data) return <div className={s.state}>Завантажую розклад…</div>;
 
@@ -73,7 +74,7 @@ export default function App() {
     if (!editor.editing) {
       const until = bannedUntil();
       setBan(until);
-      if (until) return setBanShown(true);
+      if (until) return;
       return setUnlockOpen(true);
     }
     if (editor.changes > 0) return notify('err', 'Є незбережені зміни: збережи або скасуй їх, а тоді виходь.');
@@ -151,12 +152,8 @@ export default function App() {
           if (res.ok) notify('ok', 'Режим редагування увімкнено.');
           return res;
         }}
-        onBanned={(until) => {
-          setBan(until);
-          setBanShown(true);
-        }}
+        onBanned={(until) => setBan(until)}
       />
-      {ban !== null && banShown && <BanScreen until={ban} onClose={() => setBanShown(false)} />}
       <CellEditor
         target={target}
         schedule={data}

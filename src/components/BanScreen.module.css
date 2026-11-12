@@ -5,8 +5,7 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: color-mix(in srgb, var(--bg) 70%, transparent);
-  backdrop-filter: blur(10px);
+  background: var(--bg);
   animation: fade 0.2s ease;
 }
 .card {
@@ -22,7 +21,7 @@
 .pic { width: 150px; height: 150px; display: block; margin: 0 auto 8px; }
 .title { margin: 0 0 8px; font-size: 22px; font-weight: 800; color: var(--danger); }
 .line { margin: 0 0 10px; font-size: 16px; font-weight: 700; color: var(--ink); line-height: 1.4; }
-.sub { margin: 0 0 20px; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+.sub { margin: 0; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
 .btn { width: 100%; justify-content: center; }
 @keyframes fade { from { opacity: 0; } }
 @keyframes shake {

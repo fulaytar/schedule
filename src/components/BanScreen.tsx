@@ -16,17 +16,21 @@ function left(ms: number) {
 
 interface Props {
   until: number;
-  onClose: () => void;
+  /** Час вийшов — показати сайт знову */
+  onExpire: () => void;
 }
 
 /** Повноекранне попередження: редагування з цього браузера закрите на добу */
-export function BanScreen({ until, onClose }: Props) {
+export function BanScreen({ until, onExpire }: Props) {
   const line = useMemo(() => LINES[Math.floor(Math.random() * LINES.length)], []);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const t = window.setInterval(() => setNow(Date.now()), 30000);
     return () => window.clearInterval(t);
   }, []);
+  useEffect(() => {
+    if (now >= until) onExpire();
+  }, [now, until, onExpire]);
 
   return (
     <div className={s.overlay} role="alertdialog" aria-modal="true" aria-labelledby="ban-title">
@@ -37,12 +41,9 @@ export function BanScreen({ until, onClose }: Props) {
         </h2>
         <p className={s.line}>{line}</p>
         <p className={s.sub}>
-          Двічі введено неправильний пароль. Змінювати розклад із цього браузера можна буде через{' '}
+          Двічі введено неправильний пароль. Сайт із цього браузера знову відкриється через{' '}
           <b>{left(until - now)}</b>.
         </p>
-        <button className={`btn ${s.btn}`} onClick={onClose}>
-          Зрозумів, просто подивлюсь розклад
-        </button>
       </div>
     </div>
   );
