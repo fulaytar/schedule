@@ -66,12 +66,14 @@ export async function unseal<T>(key: CryptoKey, blob: SealedBlob): Promise<T> {
   return JSON.parse(new TextDecoder().decode(plain)) as T;
 }
 
+/** null — файла немає (редагування не налаштоване). Без інтернету кидає помилку. */
 export async function loadSecret(): Promise<SecretBlob | null> {
+  const res = await fetch(`./data/secret.json?t=${Date.now()}`, { cache: 'no-store' });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(String(res.status));
   try {
-    const res = await fetch(`./data/secret.json?t=${Date.now()}`, { cache: 'no-store' });
-    if (!res.ok) return null;
     return (await res.json()) as SecretBlob;
   } catch {
-    return null;
+    return null; // замість файла прийшло щось інше
   }
 }

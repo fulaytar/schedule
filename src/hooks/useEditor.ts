@@ -32,6 +32,9 @@ function countChanges(a: Schedule, b: Schedule): number {
   return n;
 }
 
+/** Повідомлення, коли немає інтернету */
+export const OFFLINE = 'Немає інтернету. Перевір підключення й спробуй ще раз.';
+
 export type UnlockResult = { ok: true } | { ok: false; message: string };
 
 /**
@@ -54,7 +57,13 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
 
   const unlock = useCallback(
     async (password: string): Promise<UnlockResult> => {
-      const blob = await loadSecret();
+      if (!navigator.onLine) return { ok: false, message: OFFLINE };
+      let blob;
+      try {
+        blob = await loadSecret();
+      } catch {
+        return { ok: false, message: OFFLINE };
+      }
       if (!blob) return { ok: false, message: 'Редагування ще не налаштоване: на сайті немає файла secret.json.' };
       let acc: RepoAccess;
       let k: CryptoKey;
@@ -89,7 +98,7 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
         lastActive.current = Date.now();
         return { ok: true };
       } catch (e) {
-        return { ok: false, message: e instanceof GitHubError ? e.message : 'Немає зв’язку з GitHub.' };
+        return { ok: false, message: e instanceof GitHubError ? e.message : OFFLINE };
       }
     },
     [setSchedule],
@@ -148,7 +157,7 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
       setSchedule(toSave);
       return { ok: true };
     } catch (e) {
-      return { ok: false, message: e instanceof GitHubError ? e.message : 'Немає зв’язку з GitHub. Зміни не втрачено — спробуй ще раз.' };
+      return { ok: false, message: e instanceof GitHubError ? e.message : 'Немає інтернету. Зміни не втрачено — спробуй ще раз, коли з’явиться зв’язок.' };
     } finally {
       setSaving(false);
     }
@@ -165,7 +174,7 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
         setPriv(next);
         return { ok: true };
       } catch (e) {
-        return { ok: false, message: e instanceof GitHubError ? e.message : 'Немає зв’язку з GitHub.' };
+        return { ok: false, message: e instanceof GitHubError ? e.message : OFFLINE };
       }
     },
     [access, key, priv, privSha],

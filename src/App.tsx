@@ -25,6 +25,8 @@ import { Footer } from './components/Footer';
 import { BanScreen } from './components/BanScreen';
 import { Loader } from './components/Loader';
 import { Offline } from './components/Offline';
+import { OfflineBar } from './components/OfflineBar';
+import { useOnline } from './hooks/useOnline';
 import { bannedUntil } from './lib/ban';
 import s from './App.module.css';
 
@@ -36,6 +38,7 @@ export default function App() {
   const now = useNow();
   const { theme, toggle } = useTheme();
   const cal = useCalendar(schedule !== null);
+  const online = useOnline();
   const wide = useMediaQuery('(min-width: 1024px)');
 
   const [view, setView] = useState<View>(wide ? 'week' : 'day');
@@ -102,6 +105,7 @@ export default function App() {
 
   return (
     <div className={`${s.page} ${editor.editing ? s.withBar : ''}`}>
+      {!online && <OfflineBar />}
       <Header meta={data.meta} theme={theme} onToggleTheme={toggle} editing={editor.editing} onLockClick={onLockClick} />
 
       <NowCard schedule={data} cal={cal} now={now} />

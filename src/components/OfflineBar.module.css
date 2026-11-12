@@ -1,0 +1,22 @@
+.bar {
+  position: sticky;
+  top: 10px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 9px 16px;
+  border-radius: 99px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 13.5px;
+  box-shadow: var(--shadow);
+  animation: drop 0.25s ease;
+}
+.bar svg { flex: none; }
+@keyframes drop { from { opacity: 0; transform: translateY(-8px); } }
+@media (prefers-reduced-motion: reduce) { .bar { animation: none; } }
