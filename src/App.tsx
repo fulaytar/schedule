@@ -7,7 +7,7 @@ import { useNow } from './hooks/useNow';
 import { useTheme } from './hooks/useTheme';
 import { useMediaQuery } from './hooks/useMediaQuery';
 import { useCalendar } from './hooks/useCalendar';
-import { isCancelled, weekDates } from './lib/calendar';
+import { isCancelled, weekDates, weekOffsetBounds } from './lib/calendar';
 import { dayKeyOf } from './lib/constants';
 import { nowMin } from './lib/time';
 import { Header } from './components/Header';
@@ -58,9 +58,12 @@ export default function App() {
   if (error) return <div className={s.state}>{error}</div>;
   if (!data) return <div className={s.state}>Завантажую розклад…</div>;
 
-  const shown = new Date(now.getFullYear(), now.getMonth(), now.getDate() + weekOffset * 7);
+  // тижні — лише в межах навчального року (вересень — кінець ІІ семестру)
+  const bounds = weekOffsetBounds(cal, now);
+  const offset = Math.min(Math.max(weekOffset, bounds.min), bounds.max);
+  const shown = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset * 7);
   const week = weekDates(shown);
-  const today = weekOffset === 0 ? dayKeyOf(now) : null;
+  const today = offset === 0 ? dayKeyOf(now) : null;
   const m = nowMin(now);
   const fmt = (d: Date, month: boolean) =>
     d.toLocaleDateString('uk-UA', month ? { day: 'numeric', month: 'long' } : { day: 'numeric' });
@@ -116,14 +119,14 @@ export default function App() {
             ]}
           />
           <div className={s.weekNav} aria-label="Тиждень">
-            <button className="btn btn-ghost btn-icon" onClick={() => setWeekOffset((w) => w - 1)} aria-label="Попередній тиждень">
+            <button className="btn btn-ghost btn-icon" onClick={() => setWeekOffset(offset - 1)} disabled={offset <= bounds.min} aria-label="Попередній тиждень">
               <ChevronLeft size={18} />
             </button>
             <span className={s.weekLabel}>{weekLabel}</span>
-            <button className="btn btn-ghost btn-icon" onClick={() => setWeekOffset((w) => w + 1)} aria-label="Наступний тиждень">
+            <button className="btn btn-ghost btn-icon" onClick={() => setWeekOffset(offset + 1)} disabled={offset >= bounds.max} aria-label="Наступний тиждень">
               <ChevronRight size={18} />
             </button>
-            {weekOffset !== 0 && (
+            {offset !== 0 && (
               <button className="btn btn-ghost" onClick={() => setWeekOffset(0)}>
                 Цей тиждень
               </button>

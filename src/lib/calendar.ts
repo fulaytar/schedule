@@ -133,6 +133,23 @@ export function scheduleOn(schedule: Schedule, cal: SchoolCalendar | null, date:
 export const blocksOn = (schedule: Schedule, cal: SchoolCalendar | null, date: Date) =>
   dayBlocks(scheduleOn(schedule, cal, date), dayKeyOf(date));
 
+/** Початок і кінець навчального року (перший і останній день семестрів) */
+export function schoolYearRange(cal: SchoolCalendar | null): { start: Date; end: Date } | null {
+  if (!cal || cal.terms.length === 0) return null;
+  const starts = cal.terms.map((t) => t.start).sort();
+  const ends = cal.terms.map((t) => t.end).sort();
+  return { start: fromIso(starts[0]), end: fromIso(ends[ends.length - 1]) };
+}
+
+/** На скільки тижнів можна піти назад / вперед від поточного (поточний тиждень доступний завжди) */
+export function weekOffsetBounds(cal: SchoolCalendar | null, now: Date): { min: number; max: number } {
+  const range = schoolYearRange(cal);
+  if (!range) return { min: -Infinity, max: Infinity };
+  const monday = (d: Date) => weekDates(d).mon.getTime();
+  const weeks = (d: Date) => Math.round((monday(d) - monday(now)) / (7 * 864e5));
+  return { min: Math.min(0, weeks(range.start)), max: Math.max(0, weeks(range.end)) };
+}
+
 /** Дати тижня, у якому лежить дата, Пн → Нд */
 export function weekDates(now: Date): Record<DayKey, Date> {
   const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
