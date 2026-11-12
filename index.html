@@ -18,10 +18,28 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
     />
+    <style>
+      /* лоадер до завантаження скриптів — React замінить його */
+      .boot { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 22px; background: #f3f5f4; font-family: Manrope, Inter, system-ui, sans-serif; }
+      .boot-grid { display: grid; grid-template-columns: repeat(7, 22px); gap: 6px; padding: 16px; border-radius: 20px; background: #fff; box-shadow: 0 8px 28px -12px rgba(20,35,28,.16); }
+      .boot-grid i { width: 22px; height: 22px; border-radius: 7px; background: #e5eaf2; animation: boot 1.6s cubic-bezier(.34,1.56,.64,1) infinite; }
+      .boot-grid i:nth-child(7n+2), .boot-grid i:nth-child(7n+3) { background: #fcefc2; }
+      .boot-grid i:nth-child(7n+1) { background: #dcf1e4; }
+      .boot-grid i:nth-child(7n+6) { background: #ede1f8; }
+      .boot p { margin: 0; font-weight: 700; font-size: 15px; color: #55635c; }
+      @keyframes boot { 0%, 100% { transform: scale(.55); opacity: .35; } 35% { transform: scale(1.08); opacity: 1; } 55% { transform: scale(1); opacity: 1; } }
+      @media (prefers-color-scheme: dark) {
+        .boot { background: #0d1311; } .boot-grid { background: #151d1a; } .boot p { color: #a3b1aa; }
+        .boot-grid i { filter: brightness(.45) saturate(1.4); }
+      }
+      @media (prefers-reduced-motion: reduce) { .boot-grid i { animation: none; } }
+    </style>
     <title>Розклад · Фулайтар І. С.</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot" role="status"><div class="boot-grid"><i style="animation-delay:0.00s"></i><i style="animation-delay:0.09s"></i><i style="animation-delay:0.18s"></i><i style="animation-delay:0.27s"></i><i style="animation-delay:0.36s"></i><i style="animation-delay:0.45s"></i><i style="animation-delay:0.54s"></i><i style="animation-delay:0.09s"></i><i style="animation-delay:0.18s"></i><i style="animation-delay:0.27s"></i><i style="animation-delay:0.36s"></i><i style="animation-delay:0.45s"></i><i style="animation-delay:0.54s"></i><i style="animation-delay:0.63s"></i><i style="animation-delay:0.18s"></i><i style="animation-delay:0.27s"></i><i style="animation-delay:0.36s"></i><i style="animation-delay:0.45s"></i><i style="animation-delay:0.54s"></i><i style="animation-delay:0.63s"></i><i style="animation-delay:0.72s"></i></div><p>Завантажую розклад…</p></div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

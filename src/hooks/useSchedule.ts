@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Schedule } from '../types';
 
-/** Завантажує розклад, опублікований разом із сайтом */
+/** Завантажує розклад, опублікований разом із сайтом. Повторює спробу, коли з'являється інтернет. */
 export function useSchedule() {
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let alive = true;
+    setError(null);
     fetch(`./data/schedule.json?t=${Date.now()}`, { cache: 'no-store' })
       .then((r) => {
         if (!r.ok) throw new Error(String(r.status));
@@ -18,7 +20,16 @@ export function useSchedule() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [attempt]);
 
-  return { schedule, setSchedule, error };
+  const retry = useCallback(() => setAttempt((n) => n + 1), []);
+
+  // інтернет повернувся — пробуємо самі
+  useEffect(() => {
+    if (!error) return;
+    window.addEventListener('online', retry);
+    return () => window.removeEventListener('online', retry);
+  }, [error, retry]);
+
+  return { schedule, setSchedule, error, retry };
 }

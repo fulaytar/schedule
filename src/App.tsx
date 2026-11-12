@@ -23,17 +23,19 @@ import { SaveBar } from './components/SaveBar';
 import { Toast, type ToastMsg } from './components/Toast';
 import { Footer } from './components/Footer';
 import { BanScreen } from './components/BanScreen';
+import { Loader } from './components/Loader';
+import { Offline } from './components/Offline';
 import { bannedUntil } from './lib/ban';
 import s from './App.module.css';
 
 type View = 'week' | 'day';
 
 export default function App() {
-  const { schedule, setSchedule, error } = useSchedule();
+  const { schedule, setSchedule, error, retry } = useSchedule();
   const editor = useEditor(schedule, setSchedule);
   const now = useNow();
   const { theme, toggle } = useTheme();
-  const cal = useCalendar();
+  const cal = useCalendar(schedule !== null);
   const wide = useMediaQuery('(min-width: 1024px)');
 
   const [view, setView] = useState<View>(wide ? 'week' : 'day');
@@ -55,8 +57,8 @@ export default function App() {
 
   // заблокований браузер бачить лише попередження — без розкладу
   if (ban !== null) return <BanScreen until={ban} onExpire={() => setBan(bannedUntil())} />;
-  if (error) return <div className={s.state}>{error}</div>;
-  if (!data) return <div className={s.state}>Завантажую розклад…</div>;
+  if (error && !data) return <Offline text={error} onRetry={retry} />;
+  if (!data) return <Loader />;
 
   // тижні — лише в межах навчального року (вересень — кінець ІІ семестру)
   const bounds = weekOffsetBounds(cal, now);
