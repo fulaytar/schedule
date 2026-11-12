@@ -20,6 +20,29 @@ export interface PeriodStats {
 const zero = <T extends string>(keys: readonly T[]) =>
   Object.fromEntries(keys.map((k) => [k, 0])) as Record<T, number>;
 
+/**
+ * Хвилини за категоріями. IT, що йде кількома слотами поспіль, рахується суцільно —
+ * разом із перервами між дзвінками (робота ж не зупиняється на перерву).
+ */
+export function catMinutes(schedule: Schedule, day: DayKey): Record<CatKey, number> {
+  const min = zero(CAT_ORDER);
+  const cells = schedule.cells[day] ?? {};
+  let prevEnd: number | null = null;
+  for (const slot of schedule.slots) {
+    const cell = cells[slot.id];
+    if (!cell) {
+      prevEnd = null;
+      continue;
+    }
+    const start = toMin(slot.start);
+    const end = toMin(slot.end);
+    if (cell.cat === 'it' && prevEnd !== null && !cell.time) min.it += end - prevEnd;
+    else min[cell.cat] += end - start;
+    prevEnd = cell.cat === 'it' ? end : null;
+  }
+  return min;
+}
+
 interface DayTotals {
   min: Record<CatKey, number>;
   ses: Record<CatKey, number>;
@@ -34,10 +57,9 @@ function totals(schedule: Schedule, day: DayKey): DayTotals {
   const cells = schedule.cells[day] ?? {};
   for (const slot of schedule.slots) {
     const cell = cells[slot.id];
-    if (!cell) continue;
-    min[cell.cat] += toMin(slot.end) - toMin(slot.start);
-    if ((cell.cat === 'math' || cell.cat === 'geo') && slot.num !== null) lessons += 1;
+    if (cell && (cell.cat === 'math' || cell.cat === 'geo') && slot.num !== null) lessons += 1;
   }
+  Object.assign(min, catMinutes(schedule, day));
   const ind: string[] = [];
   for (const b of dayBlocks(schedule, day)) {
     ses[b.cell.cat] += 1;
@@ -90,9 +112,6 @@ export const monthStats = (schedule: Schedule, cal: SchoolCalendar | null, year:
 
 /** Робочі хвилини одного дня тижневого шаблону */
 export function dayWorkMinutes(schedule: Schedule, day: DayKey): number {
-  const cells = schedule.cells[day] ?? {};
-  return schedule.slots.reduce((sum, slot) => {
-    const cell = cells[slot.id];
-    return cell && CATS[cell.cat].work ? sum + toMin(slot.end) - toMin(slot.start) : sum;
-  }, 0);
+  const min = catMinutes(schedule, day);
+  return CAT_ORDER.filter((c) => CATS[c].work).reduce((sum, c) => sum + min[c], 0);
 }

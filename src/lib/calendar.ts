@@ -15,6 +15,8 @@ export interface SchoolCalendar {
   holidays: Period[];
   /** Що відпадає в канікули: уроки й «вікна». IT, заняття з учнями, зал лишаються. */
   schoolCategories: CatKey[];
+  /** У дні без уроків IT починається о цій годині й іде до звичного кінця IT ("10:00") */
+  offDayItFrom?: string;
 }
 
 export interface DayStatus {
@@ -61,11 +63,30 @@ export function dayStatus(cal: SchoolCalendar | null, date: Date): DayStatus {
 const isSchoolCell = (cal: SchoolCalendar | null, cell: Cell | undefined) =>
   !!cell && !!cal && cal.schoolCategories.includes(cell.cat);
 
-/** Копія розкладу, де в цей день прибрано уроки й вікна */
+/**
+ * Розклад дня без уроків (канікули, літо): прибрано уроки й вікна,
+ * а IT іде суцільно з offDayItFrom (типово 10:00) до звичного кінця IT цього дня.
+ * Зал і заняття з учнями лишаються на своїх місцях.
+ */
 export function withoutSchool(schedule: Schedule, cal: SchoolCalendar | null, day: DayKey): Schedule {
-  const cells = Object.fromEntries(
-    Object.entries(schedule.cells[day] ?? {}).filter(([, c]) => !isSchoolCell(cal, c)),
-  );
+  const src = schedule.cells[day] ?? {};
+  const cells: Record<string, Cell> = Object.fromEntries(
+    Object.entries(src).filter(([, c]) => c && !isSchoolCell(cal, c)),
+  ) as Record<string, Cell>;
+
+  const from = cal?.offDayItFrom ?? '10:00';
+  const itIdx = schedule.slots.map((sl, i) => (src[sl.id]?.cat === 'it' ? i : -1)).filter((i) => i >= 0);
+  if (itIdx.length > 0) {
+    const last = itIdx[itIdx.length - 1];
+    const itCell = src[schedule.slots[last].id]!;
+    schedule.slots.forEach((sl, i) => {
+      if (sl.start < from) {
+        if (cells[sl.id]?.cat === 'it') delete cells[sl.id];
+      } else if (i <= last && !cells[sl.id]) {
+        cells[sl.id] = { cat: 'it', title: itCell.title };
+      }
+    });
+  }
   return { ...schedule, cells: { ...schedule.cells, [day]: cells } };
 }
 

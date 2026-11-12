@@ -22,6 +22,8 @@ import { CellEditor, type EditTarget } from './components/CellEditor';
 import { SaveBar } from './components/SaveBar';
 import { Toast, type ToastMsg } from './components/Toast';
 import { Footer } from './components/Footer';
+import { BanScreen } from './components/BanScreen';
+import { bannedUntil } from './lib/ban';
 import s from './App.module.css';
 
 type View = 'week' | 'day';
@@ -42,6 +44,9 @@ export default function App() {
 
   const [weekOffset, setWeekOffset] = useState(0);
   const [unlockOpen, setUnlockOpen] = useState(false);
+  // блок після двох неправильних паролів: показуємо одразу при вході
+  const [ban, setBan] = useState<number | null>(() => bannedUntil());
+  const [banShown, setBanShown] = useState(() => bannedUntil() !== null);
   const [target, setTarget] = useState<EditTarget | null>(null);
   const [toast, setToast] = useState<ToastMsg | null>(null);
   const notify = (kind: ToastMsg['kind'], text: string) => setToast({ id: Date.now(), kind, text });
@@ -65,7 +70,12 @@ export default function App() {
   const edit = (day: EditTarget['day'], slotId: string) => setTarget({ day, slotId, date: week[day] });
 
   const onLockClick = () => {
-    if (!editor.editing) return setUnlockOpen(true);
+    if (!editor.editing) {
+      const until = bannedUntil();
+      setBan(until);
+      if (until) return setBanShown(true);
+      return setUnlockOpen(true);
+    }
     if (editor.changes > 0) return notify('err', 'Є незбережені зміни: збережи або скасуй їх, а тоді виходь.');
     editor.lock();
   };
@@ -141,7 +151,12 @@ export default function App() {
           if (res.ok) notify('ok', 'Режим редагування увімкнено.');
           return res;
         }}
+        onBanned={(until) => {
+          setBan(until);
+          setBanShown(true);
+        }}
       />
+      {ban !== null && banShown && <BanScreen until={ban} onClose={() => setBanShown(false)} />}
       <CellEditor
         target={target}
         schedule={data}

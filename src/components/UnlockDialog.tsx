@@ -4,22 +4,21 @@ import type { UnlockResult } from '../hooks/useEditor';
 import { Modal } from './Modal';
 import f from './form.module.css';
 
-const MAX_TRIES = 5;
-const COOLDOWN_S = 30;
+import { recordWrong, resetWrong } from '../lib/ban';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onUnlock: (password: string) => Promise<UnlockResult>;
+  /** Дві помилки поспіль — блок на добу */
+  onBanned: (until: number) => void;
 }
 
-export function UnlockDialog({ open, onClose, onUnlock }: Props) {
+export function UnlockDialog({ open, onClose, onUnlock, onBanned }: Props) {
   const [pw, setPw] = useState('');
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fails, setFails] = useState(0);
-  const [wait, setWait] = useState(0);
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -30,33 +29,31 @@ export function UnlockDialog({ open, onClose, onUnlock }: Props) {
     }
   }, [open]);
 
-  useEffect(() => {
-    if (wait <= 0) return;
-    const t = window.setTimeout(() => setWait((w) => w - 1), 1000);
-    return () => window.clearTimeout(t);
-  }, [wait]);
-
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!pw || busy || wait > 0) return;
+    if (!pw || busy) return;
     setBusy(true);
     setError(null);
     const res = await onUnlock(pw);
     setBusy(false);
     if (res.ok) {
-      setFails(0);
+      resetWrong();
       onClose();
       return;
     }
-    setError(res.message);
     if (res.message === 'Невірний пароль.') {
-      const n = fails + 1;
-      setFails(n);
-      if (n >= MAX_TRIES) {
-        setWait(COOLDOWN_S);
-        setFails(0);
+      const until = recordWrong();
+      if (until) {
+        onClose();
+        onBanned(until);
+        return;
       }
+      setPw('');
+      setError(`Невірний пароль. Ще одна помилка — і доступ закриється на добу.`);
+      return;
     }
+    resetWrong(); // пароль правильний, підвів лише зв'язок із GitHub
+    setError(res.message);
   };
 
   return (
@@ -80,7 +77,7 @@ export function UnlockDialog({ open, onClose, onUnlock }: Props) {
             autoComplete="current-password"
             value={pw}
             onChange={(e) => setPw(e.target.value)}
-            disabled={busy || wait > 0}
+            disabled={busy}
           />
           <button
             type="button"
@@ -92,12 +89,11 @@ export function UnlockDialog({ open, onClose, onUnlock }: Props) {
           </button>
         </div>
         {error && <p className={f.error}>{error}</p>}
-        {wait > 0 && <p className={f.error}>Забагато спроб. Зачекай {wait} с.</p>}
         <div className={f.actions}>
           <button type="button" className="btn" onClick={onClose}>
             Скасувати
           </button>
-          <button type="submit" className="btn btn-primary" disabled={!pw || busy || wait > 0}>
+          <button type="submit" className="btn btn-primary" disabled={!pw || busy}>
             {busy ? <LoaderCircle size={17} className="spin" /> : null}
             {busy ? 'Перевіряю…' : 'Увійти'}
           </button>

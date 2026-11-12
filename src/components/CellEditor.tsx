@@ -61,7 +61,7 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
     if (!canSave) return;
     const cell: Cell = { cat, title: finalTitle };
     if (time && slot && time !== slot.start) cell.time = time;
-    onApply(cell, off);
+    onApply(cell, cat === 'ind' && off);
   };
 
   const dayName = target ? DAYS.find((d) => d.key === target.day)!.full : '';
@@ -145,7 +145,7 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
           )}
         </div>
 
-        {current && (
+        {current && cat === 'ind' && (
           <>
             <span className={f.label}>
               Лише {dateLabel} <span className={f.optional}>— решта тижнів без змін</span>
@@ -154,7 +154,7 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
               <input type="checkbox" checked={off} onChange={(e) => setOff(e.target.checked)} />
               <span>
                 <b>Заняття не відбулося</b>
-                <small>Прибрати зі статистики{cat === 'ind' ? ' й доходу' : ''}</small>
+                <small>Прибрати зі статистики й доходу</small>
               </span>
             </label>
           </>
