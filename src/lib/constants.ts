@@ -24,10 +24,11 @@ export const CATS: Record<CatKey, CatInfo> = {
   it: { key: 'it', label: 'IT — робота', work: true, defaultTitle: 'IT' },
   ind: { key: 'ind', label: 'Індивідуальні заняття', work: true, defaultTitle: '' },
   gym: { key: 'gym', label: 'Зал', work: false, defaultTitle: 'Зал' },
+  fun: { key: 'fun', label: 'Дозвілля', work: false, defaultTitle: '' },
   free: { key: 'free', label: 'Вікно', work: false, defaultTitle: 'Вікно' },
 };
 
-export const CAT_ORDER: CatKey[] = ['math', 'geo', 'it', 'ind', 'gym', 'free'];
+export const CAT_ORDER: CatKey[] = ['math', 'geo', 'it', 'ind', 'gym', 'fun', 'free'];
 
 /** JS getDay(): 0 = неділя */
 export function dayKeyOf(date: Date): DayKey {

@@ -4,6 +4,7 @@ import type { CatKey, Cell, DayKey, Schedule } from '../types';
 import { CAT_ORDER, CATS, DAYS } from '../lib/constants';
 import { pretty } from '../lib/time';
 import { CatIcon } from './CatIcon';
+import { ICON_OPTIONS, iconOption } from '../lib/icons';
 import { Modal } from './Modal';
 import f from './form.module.css';
 import s from './CellEditor.module.css';
@@ -32,6 +33,7 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
   const [title, setTitle] = useState('');
   const [time, setTime] = useState('');
   const [off, setOff] = useState(false);
+  const [icon, setIcon] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!target) return;
@@ -39,6 +41,7 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
     setTitle(current?.title ?? '');
     setTime(current?.time ?? '');
     setOff(cancelled);
+    setIcon(current?.icon);
   }, [target, current, cancelled]);
 
   // Підказки: усі назви, які вже трапляються в цій категорії
@@ -54,6 +57,14 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
     setCat(c);
   };
 
+  const pickIcon = (key: string | undefined) => {
+    setIcon(key);
+    const opt = iconOption(key);
+    if (opt?.title && !title.trim()) setTitle(opt.title);
+    // гра — це дозвілля, а не урок
+    if (opt?.title && (cat === 'math' || cat === 'geo' || cat === 'free')) setCat('fun');
+  };
+
   const finalTitle = title.trim() || CATS[cat].defaultTitle;
   const canSave = finalTitle.length > 0;
 
@@ -61,6 +72,7 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
     if (!canSave) return;
     const cell: Cell = { cat, title: finalTitle };
     if (time && slot && time !== slot.start) cell.time = time;
+    if (icon) cell.icon = icon;
     onApply(cell, cat === 'ind' && off);
   };
 
@@ -132,6 +144,36 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
               ))}
           </div>
         )}
+
+        <span className={f.label}>
+          Іконка <span className={f.optional}>— за бажанням</span>
+        </span>
+        <div className={s.icons} role="radiogroup" aria-label="Іконка">
+          <button
+            type="button"
+            role="radio"
+            aria-checked={!icon}
+            title="Як у категорії"
+            className={`${s.icon} cat-${cat} ${!icon ? s.iconOn : ''}`}
+            onClick={() => pickIcon(undefined)}
+          >
+            <CatIcon cat={cat} size={18} />
+          </button>
+          {ICON_OPTIONS.map((o) => (
+            <button
+              key={o.key}
+              type="button"
+              role="radio"
+              aria-checked={icon === o.key}
+              title={o.label}
+              aria-label={o.label}
+              className={`${s.icon} cat-${cat} ${icon === o.key ? s.iconOn : ''}`}
+              onClick={() => pickIcon(o.key)}
+            >
+              <CatIcon cat={cat} icon={o.key} size={18} />
+            </button>
+          ))}
+        </div>
 
         <label className={f.label} htmlFor="cell-time">
           Точний початок <span className={f.optional}>— якщо не {slot ? pretty(slot.start) : ''}</span>

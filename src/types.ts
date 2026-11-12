@@ -1,4 +1,4 @@
-export type CatKey = 'math' | 'geo' | 'it' | 'ind' | 'gym' | 'free';
+export type CatKey = 'math' | 'geo' | 'it' | 'ind' | 'gym' | 'fun' | 'free';
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
 export interface Slot {
@@ -14,6 +14,8 @@ export interface Cell {
   title: string;
   /** Точний час, якщо він не збігається з початком слота (напр. "20:30") */
   time?: string;
+  /** Своя іконка замість іконки категорії (див. lib/icons.tsx) */
+  icon?: string;
   /** Лише для показу: заняття цього дня скасоване (у файлі не зберігається) */
   cancelled?: boolean;
 }

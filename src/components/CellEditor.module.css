@@ -46,3 +46,17 @@
   cursor: pointer;
 }
 .chip:hover { border-color: color-mix(in srgb, var(--cat-fg) 40%, transparent); }
+
+.icons { display: flex; flex-wrap: wrap; gap: 6px; }
+.icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--cat-fg);
+}
+.icon:hover { background: var(--cat-bg); }
+.iconOn { background: var(--cat-bg); border-color: var(--cat-fg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cat-fg) 18%, transparent); }

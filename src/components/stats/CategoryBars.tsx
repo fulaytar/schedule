@@ -4,7 +4,7 @@ import { hoursLabel } from '../../lib/time';
 import { CatIcon } from '../CatIcon';
 import s from './stats.module.css';
 
-const SHOWN: CatKey[] = ['math', 'geo', 'it', 'ind', 'gym'];
+const SHOWN: CatKey[] = ['math', 'geo', 'it', 'ind', 'gym', 'fun'];
 
 export function CategoryBars({ minutes }: { minutes: Record<CatKey, number> }) {
   const max = Math.max(1, ...SHOWN.map((c) => minutes[c]));

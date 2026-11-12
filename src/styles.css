@@ -22,6 +22,7 @@
   --it-bg: #e5eaf2; --it-fg: #48566f;
   --ind-bg: #ede1f8; --ind-fg: #6a3e9f;
   --gym-bg: #fcefc2; --gym-fg: #855f0c;
+  --fun-bg: #d8f2f5; --fun-fg: #0d6b7a;
   --free-bg: #eef0ef; --free-fg: #8f9993;
 
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -54,7 +55,8 @@
     --it-bg: rgba(140, 160, 205, 0.14); --it-fg: #b0bdd8;
     --ind-bg: rgba(170, 120, 235, 0.18); --ind-fg: #d1b0f6;
     --gym-bg: rgba(240, 190, 60, 0.16); --gym-fg: #f1d06f;
-    --free-bg: rgba(255, 255, 255, 0.04); --free-fg: #71807a;
+    --fun-bg: rgba(60, 200, 220, 0.14); --fun-fg: #7fd9e6;
+  --free-bg: rgba(255, 255, 255, 0.04); --free-fg: #71807a;
     color-scheme: dark;
   }
 }
@@ -81,6 +83,7 @@
   --it-bg: rgba(140, 160, 205, 0.14); --it-fg: #b0bdd8;
   --ind-bg: rgba(170, 120, 235, 0.18); --ind-fg: #d1b0f6;
   --gym-bg: rgba(240, 190, 60, 0.16); --gym-fg: #f1d06f;
+  --fun-bg: rgba(60, 200, 220, 0.14); --fun-fg: #7fd9e6;
   --free-bg: rgba(255, 255, 255, 0.04); --free-fg: #71807a;
   color-scheme: dark;
 }
@@ -117,6 +120,7 @@ button { cursor: pointer; }
 .cat-it { --cat-bg: var(--it-bg); --cat-fg: var(--it-fg); }
 .cat-ind { --cat-bg: var(--ind-bg); --cat-fg: var(--ind-fg); }
 .cat-gym { --cat-bg: var(--gym-bg); --cat-fg: var(--gym-fg); }
+.cat-fun { --cat-bg: var(--fun-bg); --cat-fg: var(--fun-fg); }
 .cat-free { --cat-bg: var(--free-bg); --cat-fg: var(--free-fg); }
 
 /* ===== Спільні елементи ===== */
