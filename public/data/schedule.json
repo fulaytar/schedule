@@ -1,0 +1,385 @@
+{
+  "version": 1,
+  "meta": {
+    "owner": "Фулайтар І. С.",
+    "school": "Шишлівський ліцей",
+    "year": "2026 / 2027 н. р."
+  },
+  "slots": [
+    {
+      "id": "s1",
+      "num": 1,
+      "start": "08:10",
+      "end": "08:55"
+    },
+    {
+      "id": "s2",
+      "num": 2,
+      "start": "09:05",
+      "end": "09:50"
+    },
+    {
+      "id": "s3",
+      "num": 3,
+      "start": "10:00",
+      "end": "10:45"
+    },
+    {
+      "id": "s4",
+      "num": 4,
+      "start": "10:55",
+      "end": "11:40"
+    },
+    {
+      "id": "s5",
+      "num": 5,
+      "start": "12:00",
+      "end": "12:45"
+    },
+    {
+      "id": "s6",
+      "num": 6,
+      "start": "13:05",
+      "end": "13:50"
+    },
+    {
+      "id": "s7",
+      "num": 7,
+      "start": "14:10",
+      "end": "14:55"
+    },
+    {
+      "id": "a1",
+      "num": null,
+      "start": "15:00",
+      "end": "16:00"
+    },
+    {
+      "id": "a2",
+      "num": null,
+      "start": "16:00",
+      "end": "17:00"
+    },
+    {
+      "id": "a3",
+      "num": null,
+      "start": "17:00",
+      "end": "18:00"
+    },
+    {
+      "id": "a4",
+      "num": null,
+      "start": "18:00",
+      "end": "19:00"
+    },
+    {
+      "id": "a5",
+      "num": null,
+      "start": "19:00",
+      "end": "20:00"
+    },
+    {
+      "id": "a6",
+      "num": null,
+      "start": "20:00",
+      "end": "21:00"
+    },
+    {
+      "id": "a7",
+      "num": null,
+      "start": "21:00",
+      "end": "22:00"
+    }
+  ],
+  "cells": {
+    "mon": {
+      "s1": {
+        "cat": "geo",
+        "title": "6-А Географія"
+      },
+      "s2": {
+        "cat": "math",
+        "title": "9-А Алгебра"
+      },
+      "s3": {
+        "cat": "free",
+        "title": "Вікно"
+      },
+      "s4": {
+        "cat": "geo",
+        "title": "8-А Географія"
+      },
+      "s5": {
+        "cat": "free",
+        "title": "Вікно"
+      },
+      "s6": {
+        "cat": "math",
+        "title": "6-В Математика"
+      },
+      "s7": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a1": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a2": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a3": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a5": {
+        "cat": "gym",
+        "title": "Зал"
+      },
+      "a6": {
+        "cat": "gym",
+        "title": "Зал"
+      }
+    },
+    "tue": {
+      "s1": {
+        "cat": "gym",
+        "title": "Зал"
+      },
+      "s2": {
+        "cat": "gym",
+        "title": "Зал"
+      },
+      "s4": {
+        "cat": "math",
+        "title": "6-В Математика"
+      },
+      "s5": {
+        "cat": "free",
+        "title": "Вікно"
+      },
+      "s6": {
+        "cat": "math",
+        "title": "9-А Алгебра"
+      },
+      "s7": {
+        "cat": "geo",
+        "title": "8-В Географія"
+      },
+      "a1": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a2": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a3": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a4": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a5": {
+        "cat": "ind",
+        "title": "Ярош Ян"
+      },
+      "a6": {
+        "cat": "ind",
+        "title": "Денис"
+      }
+    },
+    "wed": {
+      "s1": {
+        "cat": "gym",
+        "title": "Зал"
+      },
+      "s2": {
+        "cat": "gym",
+        "title": "Зал"
+      },
+      "s4": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "s5": {
+        "cat": "geo",
+        "title": "8-А Географія"
+      },
+      "s6": {
+        "cat": "math",
+        "title": "6-В Математика"
+      },
+      "s7": {
+        "cat": "math",
+        "title": "9-А Геометрія"
+      },
+      "a1": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a2": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a3": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a4": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a5": {
+        "cat": "ind",
+        "title": "Мішаня"
+      },
+      "a6": {
+        "cat": "ind",
+        "title": "Коля",
+        "time": "20:30"
+      }
+    },
+    "thu": {
+      "s1": {
+        "cat": "math",
+        "title": "6-В Математика"
+      },
+      "s2": {
+        "cat": "free",
+        "title": "Вікно"
+      },
+      "s3": {
+        "cat": "free",
+        "title": "Вікно"
+      },
+      "s4": {
+        "cat": "math",
+        "title": "6-В Математика"
+      },
+      "s5": {
+        "cat": "math",
+        "title": "9-А Геометрія"
+      },
+      "s6": {
+        "cat": "math",
+        "title": "9-А Алгебра"
+      },
+      "s7": {
+        "cat": "geo",
+        "title": "8-В Географія"
+      },
+      "a1": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a2": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a3": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a4": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a5": {
+        "cat": "ind",
+        "title": "Софійка"
+      },
+      "a6": {
+        "cat": "ind",
+        "title": "Денис"
+      }
+    },
+    "fri": {
+      "s1": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "s2": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "s3": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "s4": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "s5": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "s6": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "s7": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a1": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a2": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a3": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a4": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a6": {
+        "cat": "ind",
+        "title": "Коля",
+        "time": "20:30"
+      }
+    },
+    "sat": {
+      "s3": {
+        "cat": "ind",
+        "title": "Боздош"
+      },
+      "s7": {
+        "cat": "ind",
+        "title": "Ярош Ян"
+      },
+      "a1": {
+        "cat": "ind",
+        "title": "Софійка"
+      },
+      "a2": {
+        "cat": "gym",
+        "title": "Зал"
+      },
+      "a3": {
+        "cat": "gym",
+        "title": "Зал"
+      }
+    },
+    "sun": {
+      "s3": {
+        "cat": "gym",
+        "title": "Зал"
+      },
+      "s4": {
+        "cat": "gym",
+        "title": "Зал"
+      }
+    }
+  },
+  "updatedAt": "2026-11-12T12:00:00.000Z"
+}

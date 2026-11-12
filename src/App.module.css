@@ -1,0 +1,19 @@
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-block: max(24px, env(safe-area-inset-top)) max(32px, env(safe-area-inset-bottom));
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+}
+.withBar { padding-bottom: 110px; }
+.board { padding: 18px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.hint { font-size: 13px; color: var(--accent); font-weight: 600; }
+.state { min-height: 60vh; display: grid; place-items: center; padding: 24px; color: var(--ink-2); text-align: center; font-weight: 500; }
+@media (max-width: 560px) {
+  .page { gap: 14px; padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+  .board { padding: 14px; }
+}

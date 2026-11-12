@@ -1,0 +1,38 @@
+.header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.mark {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 8px 20px -8px var(--accent);
+}
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(20px, 3.4vw, 28px);
+  letter-spacing: -0.4px;
+  line-height: 1.1;
+}
+.meta { margin: 3px 0 0; color: var(--ink-2); font-size: 14px; }
+.dot { margin: 0 6px; color: var(--ink-3); }
+.actions { display: flex; gap: 8px; flex: none; }
+@media (max-width: 560px) {
+  .header { align-items: flex-start; }
+  .lockLabel { display: none; }
+  .mark { width: 40px; height: 40px; border-radius: 12px; }
+  .brand { gap: 11px; }
+  .title { font-size: 20px; }
+  .meta { font-size: 12.5px; line-height: 1.4; }
+  .owner { display: block; }
+  .ownerDot { display: none; }
+  .titleTail { display: none; }
+}
+@media (max-width: 400px) {
+  .mark { display: none; }
+}

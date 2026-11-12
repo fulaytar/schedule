@@ -1,0 +1,57 @@
+.card {
+  display: grid;
+  grid-template-columns: minmax(170px, 0.8fr) 1fr 1fr;
+  align-items: stretch;
+  overflow: hidden;
+}
+.clock { padding: 18px 22px; background: var(--accent-soft); display: flex; flex-direction: column; justify-content: center; }
+.time {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 38px;
+  line-height: 1;
+  letter-spacing: -1px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.date { margin-top: 6px; color: var(--ink-2); font-size: 14px; font-weight: 500; }
+.date::first-letter { text-transform: uppercase; }
+.slot { padding: 16px 20px; border-left: 1px solid var(--border); min-width: 0; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+.label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.live { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+.on { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); animation: pulse 2s infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 7px transparent; } }
+.chip {
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--cat-bg);
+}
+.sub { display: flex; align-items: center; gap: 10px; color: var(--ink-2); font-size: 13.5px; }
+.muted { color: var(--ink-3); }
+.bar { flex: 1; max-width: 140px; height: 5px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--accent); border-radius: 5px; }
+.empty { color: var(--ink-3); font-weight: 600; }
+
+@media (max-width: 760px) {
+  .card { grid-template-columns: 1fr 1fr; }
+  .clock { grid-column: 1 / -1; flex-direction: row; align-items: baseline; gap: 12px; padding: 14px 18px; }
+  .time { font-size: 30px; }
+  .date { margin: 0; }
+  .slot { padding: 14px 16px; }
+  .slot:nth-child(2) { border-left: 0; }
+}
+@media (max-width: 420px) {
+  .card { grid-template-columns: 1fr; }
+  .slot { border-left: 0; border-top: 1px solid var(--border); }
+}

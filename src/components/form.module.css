@@ -1,0 +1,32 @@
+.form { display: flex; flex-direction: column; gap: 8px; }
+.label { font-size: 13px; font-weight: 600; color: var(--ink-2); margin-top: 6px; }
+.optional { font-weight: 400; color: var(--ink-3); }
+.inputWrap { position: relative; display: flex; align-items: center; }
+.lead { position: absolute; left: 13px; color: var(--ink-3); pointer-events: none; }
+.input {
+  width: 100%;
+  height: 46px;
+  padding: 0 44px 0 40px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  font-size: 16px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.plain { padding: 0 14px; }
+.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.trail {
+  position: absolute;
+  right: 6px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-3);
+}
+.trail:hover { color: var(--ink); background: var(--surface); }
+.error { margin: 2px 0 0; color: var(--danger); font-size: 13.5px; font-weight: 500; }
+.actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }

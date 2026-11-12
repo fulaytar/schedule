@@ -1,0 +1,17 @@
+.cats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+.cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: var(--cat-bg);
+  color: var(--cat-fg);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+.catOn { border-color: var(--cat-fg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cat-fg) 18%, transparent); }
+.timeRow { display: flex; gap: 8px; align-items: center; }
+.time { max-width: 160px; }

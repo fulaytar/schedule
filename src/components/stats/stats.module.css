@@ -1,0 +1,56 @@
+.card { padding: 22px; display: flex; flex-direction: column; gap: 20px; }
+.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.title { margin: 0; font-family: var(--font-display); font-size: 20px; font-weight: 800; }
+.note { margin: 4px 0 0; color: var(--ink-3); font-size: 13px; }
+.month { display: flex; align-items: center; gap: 8px; }
+.monthName { min-width: 150px; text-align: center; font-weight: 700; display: inline-flex; gap: 8px; justify-content: center; align-items: center; }
+.cur { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  min-width: 0;
+}
+.tileAccent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tileLabel { font-size: 12.5px; font-weight: 600; opacity: 0.8; }
+.tileValue { font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tileHint { font-size: 12.5px; opacity: 0.7; }
+
+.charts { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
+.chart { padding: 16px 18px; border-radius: 14px; border: 1px solid var(--border); min-width: 0; }
+.chartTitle { margin: 0 0 14px; font-size: 14px; font-weight: 700; }
+
+.bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+.barRow { display: grid; grid-template-columns: 170px 1fr 64px; align-items: center; gap: 12px; font-size: 13px; }
+.barLabel { display: inline-flex; align-items: center; gap: 7px; color: var(--cat-fg); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track { height: 10px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.fill { display: block; height: 100%; border-radius: 99px; background: var(--cat-fg); opacity: 0.85; }
+.barValue { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+
+.cols { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; align-items: end; height: 150px; }
+.col { display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; }
+.colValue { font-size: 12px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.colTrack { flex: 1; width: 100%; max-width: 34px; display: flex; align-items: flex-end; border-radius: 8px; background: var(--surface-2); overflow: hidden; }
+.colFill { width: 100%; border-radius: 8px; background: color-mix(in srgb, var(--accent) 55%, transparent); }
+.colToday .colFill { background: var(--accent); }
+.colToday .colLabel { color: var(--accent); }
+.colLabel { font-size: 12.5px; font-weight: 700; color: var(--ink-3); }
+.unit { margin: 10px 0 0; font-size: 12px; color: var(--ink-3); text-align: center; }
+
+@media (max-width: 900px) {
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .charts { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .card { padding: 16px; }
+  .tileValue { font-size: 25px; }
+  .barRow { grid-template-columns: 1fr 64px; }
+  .barRow .track { grid-column: 1 / -1; grid-row: 2; }
+  .monthName { min-width: 120px; }
+}

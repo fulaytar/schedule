@@ -1,0 +1,24 @@
+.toast {
+  position: fixed;
+  z-index: 60;
+  left: 50%;
+  top: max(16px, env(safe-area-inset-top));
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  font-weight: 500;
+  cursor: pointer;
+  animation: drop 0.2s ease;
+}
+.toast svg { flex: none; margin-top: 1px; }
+.ok svg { color: var(--accent); }
+.err svg { color: var(--danger); }
+@keyframes drop { from { opacity: 0; transform: translate(-50%, -8px); } }
