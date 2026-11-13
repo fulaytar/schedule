@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { SchoolCalendar } from '../lib/calendar';
+import { dataUrl } from '../lib/dataUrl';
 
 /**
  * Календар навчального року. Якщо файла немає — усі дні вважаються навчальними.
@@ -11,7 +12,7 @@ export function useCalendar(ready = true): SchoolCalendar | null {
   useEffect(() => {
     if (done || !ready) return;
     let alive = true;
-    fetch(`./data/calendar.json?t=${Date.now()}`, { cache: 'no-store' })
+    fetch(dataUrl('calendar.json'), { cache: 'no-store' })
       .then((r) => {
         if (alive) setDone(true); // відповідь є (навіть 404) — більше не питаємо
         return r.ok ? (r.json() as Promise<SchoolCalendar>) : null;

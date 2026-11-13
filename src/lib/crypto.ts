@@ -1,3 +1,4 @@
+import { dataUrl } from './dataUrl';
 import { b64ToBytes, bytesToB64 } from './base64';
 
 /** Формат файла public/data/secret.json (створює scripts/make-secret.mjs) */
@@ -68,7 +69,7 @@ export async function unseal<T>(key: CryptoKey, blob: SealedBlob): Promise<T> {
 
 /** null — файла немає (редагування не налаштоване). Без інтернету кидає помилку. */
 export async function loadSecret(): Promise<SecretBlob | null> {
-  const res = await fetch(`./data/secret.json?t=${Date.now()}`, { cache: 'no-store' });
+  const res = await fetch(dataUrl('secret.json'), { cache: 'no-store' });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(String(res.status));
   try {

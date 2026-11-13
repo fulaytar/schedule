@@ -1,0 +1,90 @@
+# Збирає застосунки для телефона:
+#   • Android — готовий Rozklad.apk (ставиться на телефон напряму)
+#   • iPhone  — Rozklad.ipa без підпису (підписати й поставити через Sideloadly)
+# Застосунок бере розклад з опублікованого сайту, тож зміни розкладу
+# з'являються в апці одразу, без перезбирання. Перезбирати треба лише після змін коду.
+name: Mobile apps
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'capacitor.config.json'
+      - 'mobile/**'
+      - '.github/workflows/mobile.yml'
+
+env:
+  VITE_DATA_BASE: https://fulaytar.github.io/schedule/
+
+jobs:
+  android:
+    name: Android (APK)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap add android
+      - name: Іконки, заставка, номер версії
+        run: |
+          cp -r mobile/icons/android-res/. android/app/src/main/res/
+          cp -r mobile/splash/android-res/. android/app/src/main/res/
+          sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+      - name: Збирання APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk Rozklad.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Rozklad-Android
+          path: Rozklad.apk
+
+  ios:
+    name: iPhone (IPA без підпису)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Найновіший Xcode
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)" && xcodebuild -version
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap add ios
+      - name: Іконка, заставка, номер версії
+        run: |
+          cp mobile/icons/ios-1024.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+          cp mobile/splash/ios/*.png ios/App/App/Assets.xcassets/Splash.imageset/
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" ios/App/App/Info.plist || true
+      - name: Збирання
+        run: |
+          xcodebuild -list -project ios/App/App.xcodeproj
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+      - name: Пакування в .ipa
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -qry Rozklad.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Rozklad-iPhone
+          path: Rozklad.ipa

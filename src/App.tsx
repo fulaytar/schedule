@@ -118,7 +118,7 @@ export default function App() {
 
   return (
     <div className={`${s.page} ${editor.editing ? s.withBar : ''}`}>
-      {!online && <OfflineBar />}
+      {(!online || error) && <OfflineBar />}
       <Header meta={data.meta} theme={theme} onToggleTheme={toggle} editing={editor.editing} onLockClick={onLockClick} />
 
       <NowCard schedule={data} cal={cal} now={now} />

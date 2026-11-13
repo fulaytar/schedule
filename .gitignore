@@ -1,5 +1,8 @@
 node_modules
 dist
+# нативні проєкти створюються під час збирання в GitHub Actions
+android
+ios
 .DS_Store
 *.log
 .env*
