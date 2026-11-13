@@ -5,6 +5,7 @@ import { CAT_ORDER, CATS, DAYS } from '../lib/constants';
 import { pretty } from '../lib/time';
 import { CatIcon } from './CatIcon';
 import { ICON_OPTIONS, iconOption } from '../lib/icons';
+import { cellOn } from '../lib/calendar';
 import { Modal } from './Modal';
 import f from './form.module.css';
 import s from './CellEditor.module.css';
@@ -16,17 +17,31 @@ export interface EditTarget {
   date: Date;
 }
 
+/** once — лише цього дня, weekly — щотижня */
+export type Repeat = 'once' | 'weekly';
+
+const EVERY: Record<DayKey, string> = {
+  mon: 'Щопонеділка',
+  tue: 'Щовівторка',
+  wed: 'Щосереди',
+  thu: 'Щочетверга',
+  fri: 'Щоп’ятниці',
+  sat: 'Щосуботи',
+  sun: 'Щонеділі',
+};
+
 interface Props {
   target: EditTarget | null;
   schedule: Schedule;
   /** чи це заняття скасоване саме на target.date */
   cancelled: boolean;
-  onApply: (cell: Cell | null, cancelled: boolean) => void;
+  onApply: (cell: Cell | null, cancelled: boolean, repeat: Repeat) => void;
   onClose: () => void;
 }
 
 export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Props) {
-  const current = target ? schedule.cells[target.day]?.[target.slotId] : undefined;
+  // що стоїть саме цієї дати: разове заняття або тижневе
+  const current = target ? cellOn(schedule, target.date, target.slotId) : undefined;
   const slot = target ? schedule.slots.find((x) => x.id === target.slotId) : undefined;
 
   const [cat, setCat] = useState<CatKey>('math');
@@ -34,6 +49,8 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
   const [time, setTime] = useState('');
   const [off, setOff] = useState(false);
   const [icon, setIcon] = useState<string | undefined>(undefined);
+  // за замовчуванням зміна стосується лише цього дня
+  const [repeat, setRepeat] = useState<Repeat>('once');
 
   useEffect(() => {
     if (!target) return;
@@ -42,6 +59,7 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
     setTime(current?.time ?? '');
     setOff(cancelled);
     setIcon(current?.icon);
+    setRepeat('once');
   }, [target, current, cancelled]);
 
   // Підказки: усі назви, які вже трапляються в цій категорії
@@ -73,7 +91,7 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
     const cell: Cell = { cat, title: finalTitle };
     if (time && slot && time !== slot.start) cell.time = time;
     if (icon) cell.icon = icon;
-    onApply(cell, cat === 'ind' && off);
+    onApply(cell, cat === 'ind' && off, repeat);
   };
 
   const dayName = target ? DAYS.find((d) => d.key === target.day)!.full : '';
@@ -91,7 +109,7 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
       footer={
         <>
           {current && (
-            <button className="btn btn-danger" onClick={() => onApply(null, false)} style={{ marginRight: 'auto' }}>
+            <button className="btn btn-danger" onClick={() => onApply(null, false, repeat)} style={{ marginRight: 'auto' }}>
               <Trash2 size={16} /> Прибрати
             </button>
           )}
@@ -105,6 +123,30 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
       }
     >
       <div className={f.form}>
+        <span className={f.label}>Коли</span>
+        <div className={s.repeat} role="radiogroup" aria-label="Повторення">
+          <button
+            type="button"
+            role="radio"
+            aria-checked={repeat === 'once'}
+            className={`${s.rep} ${repeat === 'once' ? s.repOn : ''}`}
+            onClick={() => setRepeat('once')}
+          >
+            <b>Лише {dateLabel}</b>
+            <small>інші тижні без змін</small>
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={repeat === 'weekly'}
+            className={`${s.rep} ${repeat === 'weekly' ? s.repOn : ''}`}
+            onClick={() => setRepeat('weekly')}
+          >
+            <b>{target ? EVERY[target.day] : ''}</b>
+            <small>повторювати щотижня</small>
+          </button>
+        </div>
+
         <span className={f.label}>Що це</span>
         <div className={s.cats} role="radiogroup" aria-label="Вид заняття">
           {CAT_ORDER.map((c) => (
@@ -196,7 +238,7 @@ export function CellEditor({ target, schedule, cancelled, onApply, onClose }: Pr
         {current && cat === 'ind' && (
           <>
             <span className={f.label}>
-              Лише {dateLabel} <span className={f.optional}>— решта тижнів без змін</span>
+              Цього дня
             </span>
             <label className={`${s.cancel} ${off ? s.cancelOn : ''}`}>
               <input type="checkbox" checked={off} onChange={(e) => setOff(e.target.checked)} />

@@ -1,3 +1,4 @@
+import { withSlotsToMidnight } from './slots';
 import type { Schedule } from '../types';
 import type { RepoAccess } from './crypto';
 import { b64ToUtf8, utf8ToB64 } from './base64';
@@ -59,7 +60,7 @@ export async function putFile(
 export async function fetchRemote(a: RepoAccess): Promise<{ schedule: Schedule; sha: string }> {
   const file = await getFile(a, a.path);
   if (!file) throw new GitHubError(explain(404));
-  return { schedule: JSON.parse(file.text) as Schedule, sha: file.sha };
+  return { schedule: withSlotsToMidnight(JSON.parse(file.text) as Schedule), sha: file.sha };
 }
 
 export function saveRemote(a: RepoAccess, schedule: Schedule, sha: string): Promise<string> {

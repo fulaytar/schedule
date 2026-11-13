@@ -39,3 +39,15 @@
   text-decoration: none;
 }
 .sm .tag { font-size: 9.5px; }
+.once {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px dashed color-mix(in srgb, var(--cat-fg) 55%, transparent);
+  color: var(--cat-fg);
+}
+.sm .once { font-size: 9.5px; }

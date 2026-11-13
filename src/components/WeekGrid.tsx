@@ -5,7 +5,7 @@ import { DAYS } from '../lib/constants';
 import { dayBlocks } from '../lib/blocks';
 import { pretty, toMin } from '../lib/time';
 import { CatPill } from './CatPill';
-import { dayStatus, isCancelled, markCancelled, withoutSchool, type SchoolCalendar } from '../lib/calendar';
+import { cellOn, dayStatus, displayOn, isCancelled, type SchoolCalendar } from '../lib/calendar';
 import s from './WeekGrid.module.css';
 
 interface Props {
@@ -25,9 +25,11 @@ type Row = { kind: 'slot'; slot: Slot } | { kind: 'sep' };
 export function WeekGrid({ schedule, cal, week, today, nowMin, editing, onEdit }: Props) {
   const offDay = (d: DayKey) => !dayStatus(cal, week[d]).school;
   const isSchoolCat = (cat: string) => !!cal && (cal.schoolCategories as string[]).includes(cat);
+  // Що реально стоїть кожного дня цього тижня (канікули, разові зміни, скасування)
+  const shown = Object.fromEntries(DAYS.map(({ key }) => [key, displayOn(schedule, cal, week[key])])) as Record<DayKey, Schedule>;
   // У звичайному режимі ховаємо рядки, де за весь тиждень нічого немає
   const visible = schedule.slots.filter(
-    (slot) => editing || DAYS.some(({ key }) => schedule.cells[key]?.[slot.id]),
+    (slot) => editing || DAYS.some(({ key }) => shown[key].cells[key]?.[slot.id] || schedule.cells[key]?.[slot.id]),
   );
 
   const rows: Row[] = [];
@@ -93,7 +95,7 @@ export function WeekGrid({ schedule, cal, week, today, nowMin, editing, onEdit }
           const col = di + 2;
           if (editing) {
             return visible.map((slot) => {
-              const raw = schedule.cells[d.key]?.[slot.id];
+              const raw = cellOn(schedule, week[d.key], slot.id);
               const cell = raw && isCancelled(schedule, week[d.key], slot.id) ? { ...raw, cancelled: true } : raw;
               return (
                 <button
@@ -109,9 +111,8 @@ export function WeekGrid({ schedule, cal, week, today, nowMin, editing, onEdit }
             });
           }
 
-          // у канікули — розклад дня без уроків (IT з 10:00)
-          const daySched = offDay(d.key) ? withoutSchool(schedule, cal, d.key) : schedule;
-          const blocks = dayBlocks(markCancelled(daySched, week[d.key]), d.key);
+          // у канікули — розклад дня без уроків (IT з 10:00) + разові зміни цієї дати
+          const blocks = dayBlocks(shown[d.key], d.key);
           const taken = new Set(blocks.flatMap((b) => b.slotIds));
           const items = blocks.map((b) => {
             const from = rowOf.get(b.slotIds[0])!;

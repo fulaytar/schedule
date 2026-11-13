@@ -1,7 +1,7 @@
 import type { CatKey, DayKey, Schedule } from '../types';
 import { CAT_ORDER, CATS, DAYS, dayKeyOf } from './constants';
 import { dayBlocks } from './blocks';
-import { cancelledDates, dayStatus, isoDate, scheduleOn, withoutSchool, type SchoolCalendar } from './calendar';
+import { cancelledDates, datedDates, dayStatus, isoDate, scheduleOn, withoutSchool, type SchoolCalendar } from './calendar';
 import { toMin } from './time';
 
 export interface PeriodStats {
@@ -86,12 +86,12 @@ export function rangeStats(schedule: Schedule, cal: SchoolCalendar | null, from:
     off.set(key, totals(withoutSchool(schedule, cal, key), key));
   }
 
-  const withCancels = cancelledDates(schedule);
+  const special = new Set([...cancelledDates(schedule), ...datedDates(schedule)]);
   const end = new Date(to.getFullYear(), to.getMonth(), to.getDate());
   for (let d = new Date(from.getFullYear(), from.getMonth(), from.getDate()); d <= end; d.setDate(d.getDate() + 1)) {
     const key = dayKeyOf(d);
     const school = dayStatus(cal, d).school;
-    const t = withCancels.has(isoDate(d))
+    const t = special.has(isoDate(d))
       ? totals(scheduleOn(schedule, cal, d), key)
       : (school ? full : off).get(key)!;
     if (school && t.lessons > 0) schoolDays += 1;

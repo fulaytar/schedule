@@ -6,7 +6,7 @@ import { dayBlocks } from '../lib/blocks';
 import { dayWorkMinutes } from '../lib/stats';
 import { hoursLabel, pretty, toMin } from '../lib/time';
 import { CatPill } from './CatPill';
-import { dayStatus, isCancelled, markCancelled, scheduleOn, shortDate, withoutSchool, type SchoolCalendar } from '../lib/calendar';
+import { cellOn, dayStatus, displayOn, isCancelled, scheduleOn, shortDate, type SchoolCalendar } from '../lib/calendar';
 import s from './DayView.module.css';
 
 interface Props {
@@ -27,8 +27,8 @@ export function DayView({ schedule: full, cal, week, today, nowMin, editing, onE
   const isToday = day === today;
   const status = dayStatus(cal, week[day]);
   // У канікули уроків цього дня не показуємо (крім режиму редагування — там шаблон тижня)
-  const schedule = !editing && !status.school ? withoutSchool(full, cal, day) : full;
-  const blocks = dayBlocks(markCancelled(schedule, week[day]), day);
+  const schedule = full;
+  const blocks = dayBlocks(displayOn(full, cal, week[day]), day);
   // підсумок дня — без скасованих занять
   const real = scheduleOn(full, cal, week[day]);
   const lessons = real.slots.filter((sl) => {
@@ -78,7 +78,7 @@ export function DayView({ schedule: full, cal, week, today, nowMin, editing, onE
       {editing ? (
         <ol className={s.list}>
           {schedule.slots.map((slot) => {
-            const raw = schedule.cells[day]?.[slot.id];
+            const raw = cellOn(full, week[day], slot.id);
             const cell = raw && isCancelled(full, week[day], slot.id) ? { ...raw, cancelled: true } : raw;
             return (
               <li key={slot.id} className={s.row}>

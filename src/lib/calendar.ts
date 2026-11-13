@@ -124,10 +124,44 @@ function withoutCancelled(schedule: Schedule, date: Date): Schedule {
   return { ...schedule, cells: { ...schedule.cells, [day]: cells } };
 }
 
-/** Розклад на конкретну дату: без уроків у канікули й без скасованих занять */
+/* ---------- разові зміни на конкретну дату ---------- */
+
+/** Разові зміни цієї дати (slotId → клітинка або null) */
+export const datedOn = (schedule: Schedule, date: Date) => schedule.dated?.[isoDate(date)];
+
+/** Дати, на які є разові зміни */
+export const datedDates = (schedule: Schedule) => new Set(Object.keys(schedule.dated ?? {}));
+
+/** Розклад із разовими змінами цієї дати. mark — позначити разові клітинки (once) для показу */
+export function withDated(schedule: Schedule, date: Date, mark = true): Schedule {
+  const d = datedOn(schedule, date);
+  if (!d) return schedule;
+  const day = dayKeyOf(date);
+  const cells = { ...(schedule.cells[day] ?? {}) };
+  for (const [id, c] of Object.entries(d)) {
+    if (c) cells[id] = mark ? { ...c, once: true } : c;
+    else delete cells[id];
+  }
+  return { ...schedule, cells: { ...schedule.cells, [day]: cells } };
+}
+
+/** Що стоїть у клітинці саме цієї дати (тижнева або разова), для редагування */
+export function cellOn(schedule: Schedule, date: Date, slotId: string): Cell | undefined {
+  const d = datedOn(schedule, date);
+  if (d && slotId in d) return d[slotId] ? { ...d[slotId]!, once: true } : undefined;
+  return schedule.cells[dayKeyOf(date)]?.[slotId];
+}
+
+/** Розклад на конкретну дату: канікули, разові зміни, без скасованих занять */
 export function scheduleOn(schedule: Schedule, cal: SchoolCalendar | null, date: Date): Schedule {
   const s = dayStatus(cal, date).school ? schedule : withoutSchool(schedule, cal, dayKeyOf(date));
-  return withoutCancelled(s, date);
+  return withoutCancelled(withDated(s, date, false), date);
+}
+
+/** Для показу дня: канікули + разові зміни (позначені) + скасовані (позначені) */
+export function displayOn(schedule: Schedule, cal: SchoolCalendar | null, date: Date): Schedule {
+  const s = dayStatus(cal, date).school ? schedule : withoutSchool(schedule, cal, dayKeyOf(date));
+  return markCancelled(withDated(s, date), date);
 }
 
 export const blocksOn = (schedule: Schedule, cal: SchoolCalendar | null, date: Date) =>

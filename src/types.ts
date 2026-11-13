@@ -18,6 +18,8 @@ export interface Cell {
   icon?: string;
   /** Лише для показу: заняття цього дня скасоване (у файлі не зберігається) */
   cancelled?: boolean;
+  /** Лише для показу: разове заняття на конкретну дату (у файлі не зберігається) */
+  once?: boolean;
 }
 
 export interface Meta {
@@ -35,6 +37,11 @@ export interface Schedule {
   cells: Record<DayKey, DayCells>;
   /** Скасовані заняття на конкретні дати: "2026-11-10:a5" */
   cancelled?: string[];
+  /**
+   * Разові зміни на конкретні дати: { "2026-11-12": { "a5": {...} } }.
+   * Клітинка замінює тижневу лише цього дня; null — цього дня в клітинці нічого немає.
+   */
+  dated?: Record<string, Record<string, Cell | null>>;
   updatedAt?: string;
 }
 

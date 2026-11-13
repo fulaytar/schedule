@@ -3,7 +3,7 @@ import type { Cell, DayKey, Schedule } from '../types';
 import { loadSecret, seal, unlockSecret, unseal, type RepoAccess, type SealedBlob } from '../lib/crypto';
 import { fetchRemote, getFile, putFile, saveRemote, GitHubError } from '../lib/github';
 import { DAYS } from '../lib/constants';
-import { cancelKey } from '../lib/calendar';
+import { cancelKey, isoDate } from '../lib/calendar';
 
 const IDLE_LOCK_MS = 30 * 60 * 1000;
 
@@ -21,6 +21,14 @@ function countChanges(a: Schedule, b: Schedule): number {
   const ca = new Set(a.cancelled ?? []);
   const cb = new Set(b.cancelled ?? []);
   let n = [...ca].filter((k) => !cb.has(k)).length + [...cb].filter((k) => !ca.has(k)).length;
+  const da = a.dated ?? {};
+  const db = b.dated ?? {};
+  for (const date of new Set([...Object.keys(da), ...Object.keys(db)])) {
+    const x = da[date] ?? {};
+    const y = db[date] ?? {};
+    for (const id of new Set([...Object.keys(x), ...Object.keys(y)]))
+      if (JSON.stringify(x[id] ?? 'none') !== JSON.stringify(y[id] ?? 'none')) n++;
+  }
   for (const { key } of DAYS) {
     const x = a.cells[key] ?? {};
     const y = b.cells[key] ?? {};
@@ -127,6 +135,28 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
     });
   }, []);
 
+  /**
+   * Разова зміна на дату: клітинка — лише цього дня, null — цього дня порожньо,
+   * undefined — прибрати разову зміну (діє тижневий розклад).
+   */
+  const setDated = useCallback((date: Date, slotId: string, value: Cell | null | undefined) => {
+    lastActive.current = Date.now();
+    const iso = isoDate(date);
+    setDraft((d) => {
+      if (!d) return d;
+      const next = clone(d);
+      const all = { ...(next.dated ?? {}) };
+      const day = { ...(all[iso] ?? {}) };
+      if (value === undefined) delete day[slotId];
+      else day[slotId] = value;
+      if (Object.keys(day).length) all[iso] = day;
+      else delete all[iso];
+      if (Object.keys(all).length) next.dated = all;
+      else delete next.dated;
+      return next;
+    });
+  }, []);
+
   /** Позначити / зняти скасування заняття на конкретну дату */
   const setCancelled = useCallback((date: Date, slotId: string, on: boolean) => {
     lastActive.current = Date.now();
@@ -216,6 +246,7 @@ export function useEditor(schedule: Schedule | null, setSchedule: (s: Schedule) 
     lock,
     setCell,
     setCancelled,
+    setDated,
     discard,
     save,
     /** Видно тільки в режимі змін */

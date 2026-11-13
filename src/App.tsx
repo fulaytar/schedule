@@ -18,7 +18,7 @@ import { DayView } from './components/DayView';
 import { Legend } from './components/Legend';
 import { MonthStats } from './components/stats/MonthStats';
 import { UnlockDialog } from './components/UnlockDialog';
-import { CellEditor, type EditTarget } from './components/CellEditor';
+import { CellEditor, type EditTarget, type Repeat } from './components/CellEditor';
 import { SaveBar } from './components/SaveBar';
 import { Toast, type ToastMsg } from './components/Toast';
 import { Footer } from './components/Footer';
@@ -95,10 +95,23 @@ export default function App() {
     else notify('err', res.message);
   };
 
-  const onApply = (cell: Cell | null, cancelled: boolean) => {
+  const onApply = (cell: Cell | null, cancelled: boolean, repeat: Repeat) => {
     if (target) {
-      editor.setCell(target.day, target.slotId, cell);
-      editor.setCancelled(target.date, target.slotId, cell !== null && cancelled);
+      const { day, slotId, date } = target;
+      const weekly = data.cells[day]?.[slotId];
+      if (repeat === 'weekly') {
+        // змінюємо тижневий розклад, разову зміну цієї дати прибираємо
+        editor.setCell(day, slotId, cell);
+        editor.setDated(date, slotId, undefined);
+      } else if (cell === null) {
+        // прибрати лише цього дня: якщо тут щотижня щось є — цього дня порожньо
+        editor.setDated(date, slotId, weekly ? null : undefined);
+      } else {
+        // те саме, що й щотижня, — разова зміна не потрібна
+        const same = weekly && JSON.stringify(weekly) === JSON.stringify(cell);
+        editor.setDated(date, slotId, same ? undefined : cell);
+      }
+      editor.setCancelled(date, slotId, cell !== null && cancelled);
     }
     setTarget(null);
   };

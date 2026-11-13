@@ -10,6 +10,7 @@ export function CatPill({ cell, size = 'md' }: { cell: Cell; size?: 'sm' | 'md' 
       <CatIcon cat={cell.cat} icon={cell.icon} size={size === 'sm' ? 14 : 16} />
       <span className={s.title}>{cell.title}</span>
       {cell.time && <span className={s.time}>{pretty(cell.time)}</span>}
+      {cell.once && !cell.cancelled && <span className={s.once}>разово</span>}
       {cell.cancelled && <span className={s.tag}>скасовано</span>}
     </span>
   );

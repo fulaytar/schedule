@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Schedule } from '../types';
+import { withSlotsToMidnight } from '../lib/slots';
 
 /** Завантажує розклад, опублікований разом із сайтом. Повторює спробу, коли з'являється інтернет. */
 export function useSchedule() {
@@ -15,7 +16,7 @@ export function useSchedule() {
         if (!r.ok) throw new Error(String(r.status));
         return r.json() as Promise<Schedule>;
       })
-      .then((data) => alive && setSchedule(data))
+      .then((data) => alive && setSchedule(withSlotsToMidnight(data)))
       .catch(() => alive && setError('Не вдалося завантажити розклад. Перевір інтернет і онови сторінку.'));
     return () => {
       alive = false;
