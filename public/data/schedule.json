@@ -401,7 +401,7 @@
       }
     }
   },
-  "updatedAt": "2026-11-13T19:19:48.477Z",
+  "updatedAt": "2026-11-14T08:26:03.623Z",
   "cancelled": [
     "2026-11-13:a6"
   ],
@@ -410,6 +410,27 @@
       "a3": {
         "cat": "ind",
         "title": "Коля"
+      },
+      "a5": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a6": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a7": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a8": {
+        "cat": "it",
+        "title": "IT"
+      },
+      "a9": {
+        "cat": "fun",
+        "title": "Dota 2",
+        "icon": "dota2"
       }
     },
     "2026-11-13": {
